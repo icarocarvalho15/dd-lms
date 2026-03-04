@@ -30,11 +30,7 @@ const CourseList = () => {
     }
 
     return (
-        <div className="p-10 bg-gray-50 min-h-screen">
-            <h1 className="text-4xl font-black mb-10 text-gray-800 tracking-tight">
-                DravDev <span className="text-blue-600">Academy</span>
-            </h1>
-            
+        <div className="p-10 bg-gray-50 min-h-screen">            
             {courses.length === 0 ? (
                 <div className="bg-white p-8 rounded-lg shadow text-center text-gray-500">
                     Nenhum curso encontrado no banco de dados. 

@@ -15,10 +15,16 @@ class CourseController extends Controller
             ->get();
     }
 
-    public function show($slug)
+    public function show(string $slug)
     {
-        return Course::with(['modules.lessons', 'instructor'])
+        $course = Course::with(['modules.lessons', 'instructor'])
             ->where('slug', $slug)
-            ->firstOrFail();
+            ->first();
+
+        if (!$course) {
+            return response()->json(['message' => 'Curso não encontrado'], 404);
+        }
+
+        return response()->json($course);
     }
 }
