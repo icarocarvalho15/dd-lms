@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 interface Course {
     id: number;
@@ -53,9 +54,12 @@ const CourseList = () => {
                             <div className="p-6">
                                 <h2 className="text-xl font-bold mb-2 text-gray-800 group-hover:text-blue-600 transition-colors">{course.title}</h2>
                                 <p className="text-gray-500 text-sm mb-6 line-clamp-2 leading-relaxed">{course.description}</p>
-                                <button className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-blue-600 transition-all active:scale-95">
+                                <Link 
+                                    to={`/curso/${course.slug}`} 
+                                    className="block text-center w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-blue-600 transition-all active:scale-95"
+                                >
                                     Iniciar Curso
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     ))}

@@ -22,7 +22,8 @@ Sistema de Gestão de Aprendizagem (LMS) desenvolvido para centralizar e organiz
 ```bash
 cd api
 composer install
-cp .env.example .env # Configure seu banco de dados aqui
+touch database/database.sql
+cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
 php artisan serve
