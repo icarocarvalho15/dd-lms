@@ -1,0 +1,21 @@
+{
+  "autorun": true,
+  "autokill": true,
+  "terminals": [
+    {
+      "name": "Backend Server",
+      "command": "cd api; php artisan serve",
+      "icon": "server"
+    },
+    {
+      "name": "Frontend Server",
+      "command": "cd client; npm run dev",
+      "icon": "code"
+    },
+    {
+      "name": "Artisan",
+      "focus": true,
+      "command": "clear"
+    }
+  ]
+}

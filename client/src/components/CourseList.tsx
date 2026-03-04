@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 interface Course {
+    progress_percentage: ReactNode;
     id: number;
     title: string;
     description: string;
@@ -34,8 +35,7 @@ const CourseList = () => {
             {courses.length === 0 ? (
                 <div className="bg-white p-8 rounded-lg shadow text-center text-gray-500">
                     Nenhum curso encontrado no banco de dados. 
-                    <br/> 
-                    <span className="text-sm">Dica: Rode "php artisan migrate:fresh --seed" no terminal do Laravel.</span>
+                    <br/>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -56,6 +56,22 @@ const CourseList = () => {
                                 >
                                     Iniciar Curso
                                 </Link>
+                                <div className="mt-4 px-2">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                            Progresso
+                                        </span>
+                                        <span className="text-xs font-bold text-blue-600">
+                                            {course.progress_percentage || 0}%
+                                        </span>
+                                    </div>
+                                    <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                                        <div 
+                                            className="bg-blue-600 h-full transition-all duration-700" 
+                                            style={{ width: `${course.progress_percentage || 0}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ))}
