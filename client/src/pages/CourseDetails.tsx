@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import api from '../api/axios';
 import Navbar from '../components/Navbar';
 
 interface Lesson {
@@ -34,9 +35,7 @@ const CourseDetails = () => {
 
     const handleToggleComplete = useCallback(async (lessonId: number) => {
         try {
-            await axios.post(`http://127.0.0.1:8000/api/lessons/${lessonId}/complete`, {}, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            await api.post(`/lessons/${lessonId}/complete`);
             setCompletedLessons(prev => prev.includes(lessonId) ? prev : [...prev, lessonId]);
         } catch {
             localStorage.removeItem('token');
@@ -58,33 +57,25 @@ const CourseDetails = () => {
                 if (isMounted) {
                     setLoading(true);
                     setError(null);
-                    setCourse(null);
-                    setSecondsRead(0);
                 }
-                const res = await axios.get(`http://127.0.0.1:8000/api/courses/${slug}`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-                });
+                const res = await api.get(`/courses/${slug}`);
                 if (isMounted) {
                     const courseData = res.data.course;
                     setCourse(courseData);
                     setCompletedLessons(res.data.completed_lessons || []);
-                    
                     if (courseData.modules?.[0]?.lessons?.[0]) {
                         setCurrentLesson(courseData.modules[0].lessons[0]);
                     }
-                    setLoading(false);
                 }
             } catch (err) {
                 if (isMounted) {
-                    setLoading(false);
                     const axiosError = err as AxiosError;
-                    if (axiosError.response?.status === 401) {
-                        localStorage.removeItem('token');
-                        window.location.href = '/login';
-                    } else {
-                        setError("Erro ao carregar curso.");
+                    if (axiosError.response?.status !== 401) {
+                         setError("Erro ao carregar curso.");
                     }
                 }
+            } finally {
+                if (isMounted) setLoading(false);
             }
         };
         fetchCourse();
@@ -114,7 +105,7 @@ const CourseDetails = () => {
         };
     }, [currentLesson, completedLessons, handleToggleComplete]);
 
-    const totalLessons = course?.modules.reduce((acc, m) => acc + m.lessons.length, 0) || 0;
+    const totalLessons = course?.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0;
     const progressPercentage = totalLessons > 0 
         ? Math.round((completedLessons.length / totalLessons) * 100) 
         : 0;
@@ -137,7 +128,7 @@ const CourseDetails = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50 text-gray-900">
+        <div className="min-h-screen bg-gray-50 text-gray-900 pt-6">
             <Navbar />
             <main className="pt-20 pb-10 max-w-[1600px] mx-auto px-4">
                 <nav className="flex mb-6 text-sm text-gray-500 gap-2 items-center">
@@ -179,7 +170,7 @@ const CourseDetails = () => {
                                     <p className="text-gray-400 max-w-md">
                                         Módulo de leitura. Mantenha o foco nesta aba por {requiredReadingTime}s para concluir.
                                     </p>
-                                    {!completedLessons.includes(currentLesson!.id) && (
+                                    {currentLesson && !completedLessons.includes(currentLesson.id) && (
                                         <div className="mt-8 flex flex-col items-center gap-3">
                                             <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Validando: {requiredReadingTime - secondsRead}s</span>
                                             <div className="w-64 bg-gray-800 h-1 rounded-full overflow-hidden">
@@ -212,12 +203,12 @@ const CourseDetails = () => {
                             </div>
                         </div>
                         <div className="max-h-[500px] overflow-y-auto">
-                            {course.modules.map((module) => (
+                            {course?.modules?.map((module) => (
                                 <div key={module.id}>
                                     <div className="p-4 bg-gray-50/80 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-y border-gray-100">
                                         {module.title}
                                     </div>
-                                    {module.lessons.map((lesson) => (
+                                    {module?.lessons?.map((lesson) => (
                                         <div 
                                             key={lesson.id} 
                                             className={`flex items-center justify-between p-4 transition-all border-l-4 ${
@@ -227,7 +218,11 @@ const CourseDetails = () => {
                                             }`}
                                         >
                                             <button 
-                                                onClick={() => setCurrentLesson(lesson)} 
+                                                onClick={() => {
+                                                    setCurrentLesson(lesson);
+                                                    setSecondsRead(0);
+                                                    setShowFinishedOverlay(false);
+                                                }} 
                                                 className="flex items-center gap-4 text-left flex-1"
                                             >
                                                 <span className="opacity-50 text-xs">{lesson.video_url ? '🎥' : '📄'}</span>

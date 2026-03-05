@@ -1,34 +1,56 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
-    const navigate = useNavigate();
+    const userName = localStorage.getItem('userName') || 'Usuário';
+    const userRole = localStorage.getItem('userRole') || 'aluno';
+
     const handleLogout = () => {
         localStorage.removeItem('token');
-        navigate('/login');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userRole');
+        window.location.href = '/login';
     };
 
     return (
-        <nav className="bg-white border-b border-gray-200 fixed w-full z-50 top-0 shadow-sm">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between h-16 items-center">
-                    <Link to="/" className="flex items-center gap-2">
-                        <span className="text-xl font-black text-gray-800 tracking-tighter uppercase italic">
-                            DravDev <span className="text-blue-600 font-normal">Academy</span>
+        <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 fixed w-full z-50 top-0 shadow-sm">
+            <div className="max-w-[1600px] mx-auto px-6 h-20 flex justify-between items-center">
+                <div className="flex items-center gap-10">
+                    <Link to="/" className="flex items-center gap-2 group">
+                        <div className="bg-blue-600 p-2 rounded-xl group-hover:rotate-12 transition-transform shadow-lg shadow-blue-500/30">
+                            <span className="text-white font-bold text-xl italic px-1">D</span>
+                        </div>
+                        <span className="text-2xl font-black text-gray-900 tracking-tighter uppercase italic">
+                            DravDev <span className="text-blue-600 not-italic font-normal">Academy</span>
                         </span>
                     </Link>
-                    <div className="flex items-center gap-4">
-                        <div className="flex flex-col items-end sm:flex">
-                            <span className="text-xs font-bold text-gray-900">Ícaro Carvalho</span>
-                            <span className="text-[10px] text-gray-400 font-medium">Aluno</span>
-                        </div>
-                        <button 
-                            onClick={handleLogout}
-                            className="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 p-2 rounded-lg transition-all"
-                            title="Sair do sistema"
-                        >
-                            <span className="text-sm font-bold">Sair</span>
-                        </button>
+                    <div className="hidden md:flex items-center gap-6">
+                        <Link to="/" className="text-sm font-bold text-gray-600 hover:text-blue-600 transition-colors">Cursos</Link>
+                        <Link to="/dashboard" className="text-sm font-bold text-gray-600 hover:text-blue-600 transition-colors">Meu Painel</Link>
+                        {(userRole === 'instrutor' || userRole === 'admin') && (
+                            <Link to="/instrutor/meus-cursos" className="text-sm font-bold text-purple-600 hover:text-purple-700 transition-colors flex items-center gap-1">
+                                <span className="text-lg">⚡</span> Área do Instrutor
+                            </Link>
+                        )}
                     </div>
+                </div>
+                <div className="flex items-center gap-6">
+                    <div className="hidden sm:flex flex-col items-end border-r border-gray-200 pr-6">
+                        <span className="text-sm font-bold text-gray-900">{userName}</span>
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${
+                            userRole === 'admin' ? 'text-red-500' : 
+                            userRole === 'instrutor' ? 'text-purple-600' : 'text-blue-600'
+                        }`}>
+                            {userRole === 'admin' ? 'Administrador' : 
+                             userRole === 'instrutor' ? 'Instrutor Pro' : 'Aluno Pro'}
+                        </span>
+                    </div>
+                    <button 
+                        onClick={handleLogout}
+                        className="bg-gray-50 hover:bg-red-50 text-gray-500 hover:text-red-600 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all border border-gray-100 flex items-center gap-2 group"
+                    >
+                        <span>Sair</span>
+                        <span className="transition-transform group-hover:translate-x-1">→</span>
+                    </button>
                 </div>
             </div>
         </nav>
