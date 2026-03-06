@@ -19,11 +19,11 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
         ]);
 
-        Course::factory(6)->create(['user_id' => $instrutor->id])->each(function ($course) {
+        Course::factory(4)->create(['user_id' => $instrutor->id])->each(function ($course) {
             
-            Module::factory(3)->create(['course_id' => $course->id])->each(function ($module) {
+            Module::factory(2)->create(['course_id' => $course->id])->each(function ($module) {
                 
-                Lesson::factory(4)->create(['module_id' => $module->id]);
+                Lesson::factory(3)->create(['module_id' => $module->id]);
             });
         });
     }

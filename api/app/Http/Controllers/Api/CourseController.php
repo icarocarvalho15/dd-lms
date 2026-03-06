@@ -46,29 +46,32 @@ class CourseController extends Controller
     public function show(string $slug)
     {
         $course = Course::with(['modules.lessons'])->where('slug', $slug)->firstOrFail();
-
         /** @var \App\Models\User $user */
         $user = Auth::guard('sanctum')->user();
 
-        if (!$course->is_published && (!$user || $user->id !== $course->user_id)) {
-            return response()->json(['message' => 'Este curso ainda é um rascunho.'], 403);
-        }
-
         $completedIds = [];
+        $canGenerate = false;
+
         if ($user) {
-            $lessonIdsInThisCourse = $course->modules->flatMap(function ($module) {
+            $allLessonIds = $course->modules->flatMap(function ($module) {
                 return $module->lessons->pluck('id');
-            });
+            })->toArray();
 
             $completedIds = $user->completedLessons()
-                ->whereIn('lesson_id', $lessonIdsInThisCourse)
+                ->whereIn('lesson_id', $allLessonIds)
                 ->pluck('lesson_id')
                 ->toArray();
+
+            $totalLessons = count($allLessonIds);
+            $completedCount = count($completedIds);
+
+            $canGenerate = ($totalLessons > 0 && $completedCount === $totalLessons);
         }
 
         return response()->json([
             'course' => $course,
-            'completed_lessons' => $completedIds
+            'completed_lessons' => $completedIds,
+            'can_generate_certificate' => $canGenerate
         ]);
     }
 
@@ -87,39 +90,35 @@ class CourseController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $courses = Course::with(['modules.lessons', 'instructor'])
-            ->where('is_published', true)
-            ->get();
+        if (!$user) return response()->json(['message' => 'User not found'], 401);
 
-        $stats = [
-            'started' => 0,
-            'completed' => 0
-        ];
+        $courses = Course::with(['modules.lessons', 'instructor', 'certificates' => function($q) use ($user) {
+            $q->where('user_id', $user->id);
+        }])
+        ->where('is_published', true)
+        ->get();
 
         $enrolledCourses = [];
+        $stats = ['started' => 0, 'completed' => 0];
 
         foreach ($courses as $course) {
-            $lessonIds = $course->modules->flatMap(function ($module) {
-                return $module->lessons->pluck('id');
-            })->toArray();
-
+            $lessonIds = $course->modules->flatMap->lessons->pluck('id')->toArray();
             $totalLessons = count($lessonIds);
 
             if ($totalLessons > 0) {
                 $completedCount = $user->completedLessons()
                     ->whereIn('lesson_id', $lessonIds)
+                    ->distinct()
                     ->count();
 
                 $progress = (int) round(($completedCount / $totalLessons) * 100);
 
                 if ($progress > 0) {
                     $course->progress_percentage = $progress;
+                    $course->certificate_hash = $course->certificates->first()?->hash;
                     $enrolledCourses[] = $course;
-
                     $stats['started']++;
-                    if ($progress === 100) {
-                        $stats['completed']++;
-                    }
+                    if ($progress === 100) $stats['completed']++;
                 }
             }
         }
@@ -188,17 +187,19 @@ class CourseController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'video_url' => 'nullable|string',
+            'content' => 'nullable|string',
         ]);
 
-        $module = Module::findOrFail($moduleId);
+        $module = Module::with('course')->findOrFail($moduleId);
         
-        if ($module->course->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Não autorizado'], 403);
+        if (!$module->course || $module->course->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Não autorizado ou curso não encontrado'], 403);
         }
 
         $lesson = $module->lessons()->create([
             'title' => $request->title,
             'video_url' => $request->video_url,
+            'content' => $request->content,
             'order' => $module->lessons()->count() + 1
         ]);
 

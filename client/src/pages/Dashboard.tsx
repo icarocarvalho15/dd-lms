@@ -3,131 +3,107 @@ import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import Navbar from '../components/Navbar';
 
-interface Course {
+interface DashboardCourse {
     id: number;
     title: string;
     slug: string;
     progress_percentage: number;
+    certificate_hash: string | null;
 }
 
 interface DashboardData {
-    user: { name: string; email: string };
-    stats: { started: number; completed: number };
-    courses: Course[];
+    user: {
+        id: number;
+        name: string;
+        email: string;
+    };
+    stats: {
+        started: number;
+        completed: number;
+    };
+    courses: DashboardCourse[];
 }
 
 const Dashboard = () => {
     const [data, setData] = useState<DashboardData | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        const fetchDashboard = async () => {
-            try {
-                const res = await api.get('/dashboard');
+        api.get<DashboardData>('/dashboard')
+            .then(res => {
                 setData(res.data);
-            } catch (err) {
-                console.error("Erro ao carregar dashboard", err);
-            } finally {
                 setLoading(false);
-            }
-        };
-        fetchDashboard();
+            })
+            .catch(err => {
+                console.error("Erro ao carregar dashboard", err);
+                setLoading(false);
+            });
     }, []);
 
-    const handleDownloadCertificate = async (slug: string) => {
-        try {
-            const response = await api.get(`/courses/${slug}/certificate`, {
-                responseType: 'blob',
-            });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `Certificado-${slug}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        } catch (err) {
-            console.error("Detalhes do erro no certificado:", err);
-            alert("Erro ao gerar certificado. Verifique se concluiu todas as aulas.");
-        }
-    };
+    if (loading) return <div className="text-center pt-20 font-bold italic text-blue-600 animate-pulse">Carregando Painel...</div>;
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center italic font-bold text-blue-600">
-                <Navbar />
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-        );
-    }
-
-    if (!data) return null;
+    if (!data) return <div className="text-center pt-20">Nenhum dado encontrado.</div>;
 
     return (
         <div className="min-h-screen bg-gray-50">
             <Navbar />
-            <main className="pt-28 pb-12 max-w-[1200px] mx-auto px-6">
+            <main className="pt-28 max-w-7xl mx-auto px-4">
                 <header className="mb-10">
-                    <h1 className="text-4xl font-black italic uppercase tracking-tighter">
-                        Meu <span className="text-blue-600">Painel</span>
+                    <h1 className="text-4xl font-black italic uppercase tracking-tighter text-gray-900">
+                        Olá, {data.user.name.split(' ')[0]}! 👋
                     </h1>
-                    <p className="text-gray-500 font-medium">Olá, {data.user.name}. Acompanhe sua evolução abaixo.</p>
+                    <p className="text-gray-500 font-medium">Continue de onde você parou.</p>
                 </header>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                    <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 flex justify-between items-center group hover:shadow-md transition-all">
-                        <div>
-                            <p className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em]">Em Andamento</p>
-                            <h3 className="text-5xl font-black mt-2 italic">{data.stats.started}</h3>
-                        </div>
-                        <div className="text-5xl opacity-20 group-hover:opacity-100 transition-opacity">🚀</div>
+                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Cursos Iniciados</span>
+                        <div className="text-5xl font-black italic text-blue-600">{data.stats.started}</div>
                     </div>
-                    <div className="bg-blue-600 p-8 rounded-[2.5rem] shadow-xl shadow-blue-500/20 flex justify-between items-center text-white group">
-                        <div>
-                            <p className="text-blue-200 font-black text-[10px] uppercase tracking-[0.2em]">Concluídos</p>
-                            <h3 className="text-5xl font-black mt-2 italic">{data.stats.completed}</h3>
-                        </div>
-                        <div className="text-5xl opacity-40 group-hover:opacity-100 transition-opacity">🎓</div>
+                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Certificados Conquistados</span>
+                        <div className="text-5xl font-black italic text-yellow-500">{data.stats.completed}</div>
                     </div>
                 </div>
-                <h2 className="text-xl font-bold mb-6 italic uppercase tracking-tight text-gray-800">Meus Treinamentos</h2>
-                <div className="space-y-4">
-                    {data.courses.length === 0 ? (
-                        <div className="bg-white p-10 rounded-3xl text-center border border-dashed border-gray-300">
-                            <p className="text-gray-400 font-medium">Você ainda não iniciou nenhum curso.</p>
-                            <Link to="/" className="text-blue-600 font-bold mt-2 inline-block hover:underline">Ir para lista de Cursos →</Link>
-                        </div>
-                    ) : (
-                        data.courses.map(course => (
-                            <div key={course.id} className="bg-white p-6 rounded-[2rem] border border-gray-100 flex flex-col md:flex-row items-center justify-between shadow-sm hover:shadow-md transition-all gap-6">
-                                <div className="flex-1 w-full">
-                                    <h4 className="font-bold text-lg text-gray-900 italic tracking-tight">{course.title}</h4>
-                                    <div className="flex items-center gap-4 mt-3">
-                                        <div className="flex-1 bg-gray-100 h-2 rounded-full overflow-hidden">
-                                            <div 
-                                                className="bg-blue-600 h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(37,99,235,0.4)]" 
-                                                style={{ width: `${course.progress_percentage}%` }}
-                                            ></div>
-                                        </div>
-                                        <span className="text-xs font-black text-blue-600 w-8">{course.progress_percentage}%</span>
+                <h2 className="text-xl font-bold uppercase italic mb-6">Meus Treinamentos</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-20">
+                    {data.courses.map((course: DashboardCourse) => (
+                        <div key={course.id} className="bg-white rounded-[2.5rem] overflow-hidden shadow-xl border border-gray-100 flex flex-col hover:scale-[1.02] transition-transform duration-300">
+                            <div className="h-48 bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-6xl font-black italic shadow-inner">
+                                {course.title.charAt(0)}
+                            </div>
+                            <div className="p-8 flex-1 flex flex-col">
+                                <h3 className="text-xl font-bold leading-tight mb-4 text-gray-800">{course.title}</h3>
+                                <div className="mb-6">
+                                    <div className="flex justify-between text-xs font-bold mb-2 uppercase italic">
+                                        <span className="text-gray-400">Seu Progresso</span>
+                                        <span className="text-blue-600">{course.progress_percentage}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                        <div 
+                                            className="bg-blue-600 h-full transition-all duration-1000 ease-out" 
+                                            style={{ width: `${course.progress_percentage}%` }}
+                                        />
                                     </div>
                                 </div>
-                                <div className="flex shrink-0">
-                                    {course.progress_percentage === 100 ? (
+                                <div className="mt-auto space-y-3">
+                                    <Link 
+                                        to={`/curso/${course.slug}`}
+                                        className="block w-full text-center bg-gray-900 text-white py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:bg-blue-600 transition-all shadow-md"
+                                    >
+                                        Continuar Estudando
+                                    </Link>
+                                    {course.progress_percentage === 100 && course.certificate_hash && (
                                         <button 
-                                            onClick={() => handleDownloadCertificate(course.slug)}
-                                            className="bg-yellow-400 hover:bg-yellow-500 text-yellow-950 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-yellow-500/20 active:scale-95 flex items-center gap-2"
+                                            onClick={() => window.open(`${api.defaults.baseURL}/certificate/${course.certificate_hash}`, '_blank')}
+                                            className="block w-full text-center bg-gradient-to-r from-yellow-500 to-orange-600 text-white py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest shadow-lg shadow-orange-500/20 items-center justify-center gap-2"
                                         >
-                                            <span>📜</span> Gerar Certificado
+                                            🎓 Baixar Certificado
                                         </button>
-                                    ) : (
-                                        <Link to={`/curso/${course.slug}`} className="bg-gray-900 hover:bg-blue-600 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95">
-                                            Continuar Curso
-                                        </Link>
                                     )}
                                 </div>
                             </div>
-                        ))
-                    )}
+                        </div>
+                    ))}
                 </div>
             </main>
         </div>

@@ -17,9 +17,7 @@ const CourseList = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        api.get('http://127.0.0.1:8000/api/courses', {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        })
+        api.get('/courses')
         .then(response => {
             setCourses(response.data);
             setLoading(false);

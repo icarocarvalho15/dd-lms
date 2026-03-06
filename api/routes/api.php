@@ -14,6 +14,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/courses', [CourseController::class, 'index']);
     Route::get('/courses/{slug}', [CourseController::class, 'show']);
     Route::get('/courses/{slug}/certificate', [CertificateController::class, 'generate']);
+    Route::get('/courses/{slug}/certificate-link', [CertificateController::class, 'getPermanentLink']);
     Route::post('/lessons/{id}/complete', [CourseController::class, 'toggleComplete']);
 });
 
@@ -26,3 +27,5 @@ Route::middleware(['auth:sanctum', 'role:admin,instrutor'])->group(function () {
     Route::delete('/lessons/{id}', [CourseController::class, 'deleteLesson']);
     Route::patch('/courses/{id}/toggle-publish', [CourseController::class, 'togglePublish']);
 });
+
+Route::get('/certificate/{hash}', [CertificateController::class, 'viewPublic'])->name('certificate.public');

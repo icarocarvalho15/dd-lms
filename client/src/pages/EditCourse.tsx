@@ -1,11 +1,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import api from '../api/axios';
 import Navbar from '../components/Navbar';
 
 interface Lesson {
     id: number;
     title: string;
+    video_url?: string;
+    content?: string;
 }
 
 interface Module {
@@ -31,6 +34,7 @@ const EditCourse = () => {
     const [lessonTitle, setLessonTitle] = useState('');
     const [videoUrl, setVideoUrl] = useState('');
     const [lessonLoading, setLessonLoading] = useState(false);
+    const [lessonContent, setLessonContent] = useState('');
 
     const fetchCourseData = useCallback(async () => {
         try {
@@ -66,18 +70,22 @@ const EditCourse = () => {
     const handleAddLesson = async () => {
         if (!lessonTitle || !selectedModuleId) return;
         setLessonLoading(true);
-
         try {
             await api.post(`/modules/${selectedModuleId}/lessons`, { 
                 title: lessonTitle, 
-                video_url: videoUrl 
+                video_url: videoUrl,
+                content: lessonContent
             });
             setLessonTitle('');
             setVideoUrl('');
+            setLessonContent('');
             setShowModal(false);
             fetchCourseData();
-        } catch {
-            alert("Erro ao adicionar aula.");
+        } catch (error) {
+            const axiosError = error as AxiosError<{ message?: string }>;
+            console.error("Erro completo:", axiosError.response?.data);
+            const message = axiosError.response?.data?.message || "Erro interno no servidor (500)";
+            alert(`Erro ao adicionar aula: ${message}`);
         } finally {
             setLessonLoading(false);
         }
@@ -201,6 +209,16 @@ const EditCourse = () => {
                                     placeholder="https://youtube.com/..."
                                     value={videoUrl}
                                     onChange={(e) => setVideoUrl(e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-2">Conteúdo de Texto (Opcional)</label>
+                                <textarea 
+                                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 resize-none"
+                                    rows={4}
+                                    placeholder="Escreva o conteúdo da aula aqui..."
+                                    value={lessonContent}
+                                    onChange={(e) => setLessonContent(e.target.value)}
                                 />
                             </div>
                         </div>

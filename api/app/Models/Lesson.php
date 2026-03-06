@@ -9,5 +9,17 @@ class Lesson extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'module_id',
+        'title',
+        'video_url',
+        'content',
+        'order',
+        'duration_minutes'
+    ];
+
+    public function module()
+    {
+        return $this->belongsTo(Module::class);
+    }
 }
