@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Module;
+use App\Models\Lesson;
 
 class CourseController extends Controller
 {
@@ -135,9 +136,7 @@ class CourseController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        $courses = Course::where('user_id', $user->id)
-            ->withCount(['modules'])
-            ->get();
+        $courses = Course::withCount(['modules', 'certificates'])->orderBy('title', 'asc')->get();
 
         return response()->json($courses);
     }
@@ -222,5 +221,37 @@ class CourseController extends Controller
             'message' => $course->is_published ? 'Curso publicado com sucesso!' : 'Curso movido para rascunhos.',
             'is_published' => $course->is_published
         ]);
+    }
+
+    public function deleteModule($id)
+    {
+        $module = Module::findOrFail($id);
+        
+        $module->delete();
+
+        return response()->json(['message' => 'Módulo excluído com sucesso']);
+    }
+
+    public function deleteLesson($id)
+    {
+        $lesson = Lesson::findOrFail($id);
+        $lesson->delete();
+
+        return response()->json(['message' => 'Aula excluída com sucesso']);
+    }
+
+    public function updateLesson(Request $request, $id)
+    {
+        $lesson = Lesson::findOrFail($id);
+        
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'video_url' => 'nullable|string',
+            'content' => 'nullable|string',
+        ]);
+
+        $lesson->update($request->all());
+
+        return response()->json($lesson);
     }
 }

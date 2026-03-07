@@ -24,7 +24,7 @@ class CertificateController extends Controller
             );
 
             return response()->json([
-                'url' => route('certificate.public', ['hash' => $cert->hash])
+                'url' => url("/certificate/{$cert->hash}")
             ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno: ' . $e->getMessage()], 500);

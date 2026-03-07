@@ -8,23 +8,25 @@ Sistema de Gestão de Aprendizagem (LMS) desenvolvido para centralizar e organiz
 - **Laravel 12**: Framework PHP de última geração.
 - **MySQL**: Banco de dados relacional.
 - **Eloquent ORM**: Gestão de banco de dados e relacionamentos.
+- **DomPDF**: Geração dinâmica de certificados em PDF.
 
 ### Front-end
-- **React + TypeScript**: Interface reativa e tipagem segura.
-- **Tailwind CSS**: Estilização moderna e responsiva.
-- **Axios**: Consumo de API.
+- **React + TypeScript**: Interface reativa e tipagem segura (Strict Mode).
+- **Tailwind CSS**: Estilização moderna, responsiva e com foco em UX Corporativa.
+- **Axios**: Consumo de API com interceptors para autenticação.
 
 ---
 
 ## 🛠️ Como rodar o projeto
 
-### 1. Back-end (API)
+### 1. Back-end (Api)
 ```bash
 cd api
 composer install
 touch database/database.sql
 cp .env.example .env
 php artisan key:generate
+php artisan storage:link
 php artisan migrate --seed
 php artisan serve
 ```
@@ -39,11 +41,17 @@ npm run dev
 ---
 
 ## 📋 Funcionalidades Atuais
-- **[x] Arquitetura Fullstack separada (API/Client).**
-- **[x] Banco de dados estruturado (Cursos, Módulos e Aulas).**
-- **[x] Seeders para geração de dados de teste.**
-- **[x] Listagem dinâmica de cursos com React.**
-- **[x] Design responsivo com Tailwind CSS.**
+**👨‍🎓 Visão do Aluno**
+- **[x] Dashboard Dinâmico: Visualização de progresso e estatísticas de aprendizado.**
+- **[x] Player de Aula: Sidebar interativa com módulos e status de conclusão.**
+- **[x] Certificação Automática: Geração de certificados profissionais em PDF ao atingir 100% de progresso.**
+- **[x] Links Permanentes: Validação de certificados via URLs limpas (sem prefixo /api).**
+
+**👨‍🏫 Visão do Instrutor (Corporativo)**
+- **[x] Gestão Colaborativa: Instrutores podem gerenciar cursos de forma centralizada.**
+- **[x] CRUD de Conteúdo: Criação e edição de Cursos, Módulos e Aulas através de modais.**
+- **[x] Controle de Publicação: Sistema de Rascunho/Publicado para controle de visibilidade.**
+- **[x] Interface Administrativa: Tabela de ações centralizada com ícones intuitivos (Ver, Editar, Excluir).**
 
 ---
 

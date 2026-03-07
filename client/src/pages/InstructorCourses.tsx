@@ -9,122 +9,111 @@ interface InstructorCourse {
     slug: string;
     is_published: boolean;
     modules_count: number;
-    created_at: string;
+    certificates_count: number;
 }
 
-const InstructorCourses = () => {
+const InstructorDashboard = () => {
     const [courses, setCourses] = useState<InstructorCourse[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        const fetchInstructorCourses = async () => {
-            try {
-                const res = await api.get('/instructor/courses');
+        api.get<InstructorCourse[]>('/instructor/courses')
+            .then(res => {
                 setCourses(res.data);
-            } catch {
-                //
-            } finally {
                 setLoading(false);
-            }
-        };
-        fetchInstructorCourses();
+            })
+            .catch(() => setLoading(false));
     }, []);
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center italic font-bold text-purple-600">
-                <Navbar />
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-            </div>
-        );
-    }
+    const handleDeleteCourse = async (id: number) => {
+        if (!window.confirm("Você deseja excluir este curso permanentemente? Esta ação não pode ser desfeita.")) {
+            return;
+        }
+        try {
+            await api.delete(`/courses/${id}`);
+            setCourses(prev => prev.filter(c => c.id !== id));
+        } catch (error) {
+            console.error("Erro ao deletar curso:", error);
+            alert("Erro ao excluir curso. Verifique se ele possui módulos vinculados.");
+        }
+    };
 
+    if (loading) return <div className="text-center pt-20 font-bold italic text-blue-600 animate-pulse">Carregando Painel...</div>;
+
+    if (!courses) return <div className="text-center pt-20">Nenhum dado encontrado.</div>;
+    
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 pt-28 px-4">
             <Navbar />
-            <main className="pt-28 pb-12 max-w-[1200px] mx-auto px-6">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+            <div className="max-w-7xl mx-auto">
+                <div className="flex justify-between items-center mb-10">
                     <div>
-                        <h1 className="text-4xl font-black italic uppercase tracking-tighter">
-                            Área do <span className="text-purple-600">Instrutor</span>
-                        </h1>
-                        <p className="text-gray-500 font-medium">Gerencie seus conteúdos e acompanhe seu desempenho.</p>
+                        <h1 className="text-3xl font-black italic uppercase tracking-tighter">Área do Instrutor</h1>
+                        <p className="text-gray-500">Gerencie seus treinamentos e acompanhe seus alunos.</p>
                     </div>
                     <Link 
-                        to="/instrutor/novo-curso" 
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-purple-500/20 active:scale-95"
+                        to="/instrutor/novo-curso"
+                        className="bg-purple-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
                     >
-                        + Criar Novo Treinamento
+                        + Novo Curso
                     </Link>
                 </div>
 
                 <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-gray-50/50 border-b border-gray-100">
-                                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Treinamento</th>
-                                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Módulos</th>
-                                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
-                                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Ações</th>
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Curso</th>
+                                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Status</th>
+                                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Conteúdo</th>
+                                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Alunos Formados</th>
+                                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Ações</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {courses.length === 0 ? (
-                                <tr>
-                                    <td colSpan={4} className="p-20 text-center text-gray-400 font-medium italic">
-                                        Você ainda não possui cursos cadastrados.
+                            {courses.map(course => (
+                                <tr key={course.id} className="hover:bg-gray-50/50 transition-colors">
+                                    <td className="px-8 py-6 font-bold text-gray-900">{course.title}</td>
+                                    <td className="px-8 py-6 text-center">
+                                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter ${course.is_published ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>
+                                            {course.is_published ? 'Publicado' : 'Rascunho'}
+                                        </span>
+                                    </td>
+                                    <td className="px-8 py-6 text-sm text-gray-500 text-center">{course.modules_count} Módulos</td>
+                                    <td className="px-8 py-6 text-sm font-bold text-blue-600 text-center">{course.certificates_count}</td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex justify-center items-center gap-2">
+                                            <Link 
+                                                to={`/curso/${course.slug}`} 
+                                                title="Visualizar como Aluno"
+                                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                            >
+                                                <span className="text-lg">👁️</span>
+                                            </Link>
+                                            <Link 
+                                                to={`/instrutor/editar/${course.slug}`}
+                                                title="Editar Conteúdo"
+                                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-sm"
+                                            >
+                                                <span className="text-lg">✏️</span>
+                                            </Link>
+                                            <button 
+                                                onClick={() => handleDeleteCourse(course.id)}
+                                                title="Excluir Curso"
+                                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                            >
+                                                <span className="text-lg">🗑️</span>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
-                            ) : (
-                                courses.map(course => (
-                                    <tr key={course.id} className="hover:bg-gray-50/50 transition-colors group">
-                                        <td className="p-6">
-                                            <div className="font-bold text-gray-900 group-hover:text-purple-600 transition-colors italic">
-                                                {course.title}
-                                            </div>
-                                            <div className="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-tight">
-                                                Criado em: {new Date(course.created_at).toLocaleDateString('pt-BR')}
-                                            </div>
-                                        </td>
-                                        <td className="p-6 text-center font-bold text-gray-600">
-                                            {course.modules_count}
-                                        </td>
-                                        <td className="p-6 text-center">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
-                                                course.is_published 
-                                                ? 'bg-green-100 text-green-600' 
-                                                : 'bg-yellow-100 text-yellow-600'
-                                            }`}>
-                                                {course.is_published ? 'Publicado' : 'Rascunho'}
-                                            </span>
-                                        </td>
-                                        <td className="p-6 text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Link 
-                                                    to={`/instrutor/editar/${course.slug}`}
-                                                    className="p-3 bg-gray-100 hover:bg-purple-100 text-gray-500 hover:text-purple-600 rounded-xl transition-all"
-                                                    title="Editar Curso"
-                                                >
-                                                    ✏️
-                                                </Link>
-                                                <Link 
-                                                    to={`/curso/${course.slug}`}
-                                                    className="p-3 bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 rounded-xl transition-all"
-                                                    title="Visualizar como Aluno"
-                                                >
-                                                    👁️
-                                                </Link>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
+                            ))}
                         </tbody>
                     </table>
                 </div>
-            </main>
+            </div>
         </div>
     );
 };
 
-export default InstructorCourses;
+export default InstructorDashboard;

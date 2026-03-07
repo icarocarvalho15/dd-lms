@@ -84,8 +84,13 @@ const CourseDetails = () => {
     const handleDownloadCertificate = async () => {
         try {
             const res = await api.get(`/courses/${slug}/certificate-link`);
-            window.open(res.data.url, '_blank');
-        } catch {
+            let finalUrl = res.data.url;
+            if (finalUrl.includes('/api/certificate/')) {
+                finalUrl = finalUrl.replace('/api/certificate/', '/certificate/');
+            }
+            window.open(finalUrl, '_blank');
+        } catch (error) {
+            console.error("Erro ao preparar certificado:", error);
             alert("Erro ao preparar certificado.");
         }
     };
