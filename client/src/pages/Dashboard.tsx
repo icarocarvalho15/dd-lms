@@ -87,10 +87,10 @@ const Dashboard = () => {
                                 </div>
                                 <div className="mt-auto space-y-3">
                                     <Link 
-                                        to={`/curso/${course.slug}`}
-                                        className="block w-full text-center bg-gray-900 text-white py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:bg-blue-600 transition-all shadow-md"
+                                    to={`/curso/${course.slug}`}
+                                    className="block w-full text-center bg-gray-900 text-white py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:bg-blue-600 transition-all shadow-md"
                                     >
-                                        Continuar Estudando
+                                        {course.progress_percentage === 100 ? 'Rever Treinamento' : 'Continuar Estudando'}
                                     </Link>
                                     {course.progress_percentage === 100 && course.certificate_hash && (
                                         <button 
