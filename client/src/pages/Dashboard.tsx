@@ -26,6 +26,7 @@ interface DashboardData {
 
 const Dashboard = () => {
     const [data, setData] = useState<DashboardData | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
@@ -33,16 +34,45 @@ const Dashboard = () => {
             .then(res => {
                 setData(res.data);
                 setLoading(false);
+                setError(null);
             })
             .catch(err => {
                 console.error("Erro ao carregar dashboard", err);
                 setLoading(false);
+                setError("Não foi possível carregar os dados do Painel. Por favor, tente novamente mais tarde.");
             });
     }, []);
+    
+    if (error) return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
+            <Navbar />
+            <div className="bg-white p-10 rounded-3xl shadow-xl max-w-md">
+                <h3 className="text-2xl font-bold mb-4">{error}</h3>
+                <Link to="/" className="text-blue-600 font-bold uppercase text-xs tracking-widest">Voltar ao início.</Link>
+            </div>
+        </div>
+    );
 
-    if (loading) return <div className="text-center pt-20 font-bold italic text-blue-600 animate-pulse">Carregando Painel...</div>;
+    if (loading) return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span className="italic text-blue-600 font-bold animate-pulse">
+            DravDev Academy...
+          </span>
+        </div>
+      </div>
+    );
 
-    if (!data) return <div className="text-center pt-20">Nenhum dado encontrado.</div>;
+    if (!data) return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
+            <Navbar />
+            <div className="bg-white p-10 rounded-3xl shadow-xl max-w-md">
+                <h3 className="text-2xl font-bold mb-4">{!data}</h3>
+                <Link to="/" className="text-blue-600 font-bold uppercase text-xs tracking-widest">Voltar ao início.</Link>
+            </div>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-gray-50">

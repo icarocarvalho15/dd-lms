@@ -16,9 +16,10 @@ return new class extends Migration
             $table->string('title');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->string('thumbnail')->nullable();
+            $table->string('image')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->boolean('is_published')->default(false);
+            $table->integer('duration_minutes')->default(0);
             $table->timestamps();
         });
     }

@@ -1,19 +1,22 @@
-import type { JSX } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 
-interface Props {
-    children: JSX.Element;
+interface ProtectedRouteProps {
+    allowedRoles?: string[];
 }
 
-const ProtectedRoute = ({ children }: Props) => {
+const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
     const token = localStorage.getItem('token');
-    const location = useLocation();
+    const userRole = localStorage.getItem('userRole');
 
     if (!token) {
-        return <Navigate to="/login" state={{ from: location }} replace />;
+        return <Navigate to="/login" replace />;
     }
 
-    return children;
+    if (allowedRoles && !allowedRoles.includes(userRole || '')) {
+        return <Navigate to="/" replace />;
+    }
+
+    return <Outlet />;
 };
 
 export default ProtectedRoute;

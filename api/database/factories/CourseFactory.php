@@ -15,9 +15,10 @@ class CourseFactory extends Factory
             'title' => $title,
             'slug' => Str::slug($title),
             'description' => $this->faker->paragraph(3),
-            'thumbnail' => null,
+            'image' => null,
             'user_id' => User::factory(),
             'is_published' => true,
+            'duration_minutes' => $this->faker->numberBetween(30, 180),
         ];
     }
 }

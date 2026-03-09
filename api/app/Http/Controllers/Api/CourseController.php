@@ -157,6 +157,7 @@ class CourseController extends Controller
             'slug' => Str::slug($request->title) . '-' . Str::random(5),
             'description' => $request->description,
             'is_published' => false,
+            'duration_minutes' => $request->duration_minutes ?? 0
         ]);
 
         return response()->json([

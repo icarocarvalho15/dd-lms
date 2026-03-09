@@ -57,7 +57,7 @@ const CourseDetails = () => {
                 if (isMounted) {
                     const axiosError = err as AxiosError;
                     if (axiosError.response?.status !== 401) {
-                         setError("Erro ao carregar curso.");
+                        setError("Não foi possível carregar o curso. Por favor, tente novamente mais tarde.");
                     }
                 }
             } finally {
@@ -142,20 +142,24 @@ const CourseDetails = () => {
         : 0;
 
     if (error) return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center italic">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
             <Navbar />
             <div className="bg-white p-10 rounded-3xl shadow-xl max-w-md">
-                <h2 className="text-2xl font-bold mb-4">{error}</h2>
-                <Link to="/" className="text-blue-600 underline font-bold uppercase text-xs tracking-widest">Voltar ao início</Link>
+                <h3 className="text-2xl font-bold mb-4">{error}</h3>
+                <Link to="/" className="text-blue-600 font-bold uppercase text-xs tracking-widest">Voltar ao início.</Link>
             </div>
         </div>
     );
 
     if (loading || !course || !currentLesson) return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center italic font-bold text-blue-600">
-            <Navbar />
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span className="italic text-blue-600 font-bold animate-pulse">
+            DravDev Academy...
+          </span>
         </div>
+      </div>
     );
 
     return (

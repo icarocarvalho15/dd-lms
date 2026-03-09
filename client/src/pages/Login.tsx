@@ -31,9 +31,9 @@ const Login = () => {
                 <form onSubmit={handleLogin}>
                     <div className="text-center mb-10">
                         <h2 className="text-3xl font-black text-gray-900 tracking-tight italic uppercase">
-                            DravDev <span className="text-blue-600 not-italic font-normal">Login</span>
+                            DravDev <span className="text-blue-600 not-italic font-normal">Academy</span>
                         </h2>
-                        <p className="text-gray-400 text-sm mt-2 font-medium">Bem-vindo de volta, aluno!</p>
+                        <p className="text-gray-400 text-sm mt-2 font-medium">Bem-vindo de volta!</p>
                     </div>
                     <div className="space-y-4">
                         <div>

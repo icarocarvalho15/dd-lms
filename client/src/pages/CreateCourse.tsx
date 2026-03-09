@@ -1,27 +1,51 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import Navbar from '../components/Navbar';
 
 const CreateCourse = () => {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        setError(null);
         try {
             const res = await api.post('/courses', { title, description });
             navigate(`/instrutor/editar/${res.data.course.slug}`);
         } catch (error) {
             console.error("Erro ao criar curso:", error);
+            setError("Não foi possível criar o curso. Por favor, tente novamente mais tarde.");
             alert("Erro ao criar curso. Verifique se os campos estão preenchidos.");
         } finally {
             setLoading(false);
         }
     };
+
+    if (error) return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
+            <Navbar />
+            <div className="bg-white p-10 rounded-3xl shadow-xl max-w-md">
+                <h3 className="text-2xl font-bold mb-4">{error}</h3>
+                <Link to="/instrutor/meus-cursos" className="text-blue-600 font-bold uppercase text-xs tracking-widest">Voltar aos Cursos.</Link>
+            </div>
+        </div>
+    );
+
+    if (loading) return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span className="italic text-blue-600 font-bold animate-pulse">
+            DravDev Academy...
+          </span>
+        </div>
+      </div>
+    );
 
     return (
         <div className="min-h-screen bg-gray-50 pt-28 px-4">

@@ -17,7 +17,6 @@ class LessonFactory extends Factory
             'module_id' => Module::factory(),
             'title' => 'Aula: ' . $this->faker->words(3, true),
             'video_url' => 'https://www.w3schools.com/html/mov_bbb.mp4',
-            'duration_minutes' => $this->faker->numberBetween(5, 45),
             'order' => $this->faker->numberBetween(1, 10),
             'content' => $this->faker->text(),
         ];

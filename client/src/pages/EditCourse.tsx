@@ -27,6 +27,7 @@ const EditCourse = () => {
     const { slug } = useParams<{ slug: string }>();
     const [course, setCourse] = useState<CourseData | null>(null);
     const [newModuleTitle, setNewModuleTitle] = useState('');
+    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
@@ -43,8 +44,10 @@ const EditCourse = () => {
             setCourse(res.data.course); 
         } catch {
             alert("Erro ao carregar dados do curso.");
+            setError("Não foi possível editar o curso. Por favor, tente novamente mais tarde.");
         } finally {
             setLoading(false);
+            setError(null);
         }
     }, [slug]);
 
@@ -140,17 +143,36 @@ const EditCourse = () => {
         }
     };
 
-    if (loading) return <div className="pt-28 text-center">Carregando dados do Curso...</div>;
-    
-    if (!course) {
-        return (
-            <div className="pt-28 text-center">
-                <Navbar />
-                <p>Curso não encontrado ou você não tem permissão.</p>
-                <Link to="/instrutor/meus-cursos" className="text-blue-500 underline">Voltar para meus cursos</Link>
+    if (error) return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
+            <Navbar />
+            <div className="bg-white p-10 rounded-3xl shadow-xl max-w-md">
+                <h3 className="text-2xl font-bold mb-4">{error}</h3>
+                <Link to="/instrutor/meus-cursos" className="text-blue-600 font-bold uppercase text-xs tracking-widest">Voltar aos Cursos.</Link>
             </div>
-        );
-    }
+        </div>
+    );
+
+    if (loading) return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span className="italic text-blue-600 font-bold animate-pulse">
+            DravDev Academy...
+          </span>
+        </div>
+      </div>
+    );
+    
+    if (!course) return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
+            <Navbar />
+            <div className="bg-white p-10 rounded-3xl shadow-xl max-w-md">
+                <h3 className="text-2xl font-bold mb-4">{error}</h3>
+                <Link to="/instrutor/meus-cursos" className="text-blue-600 font-bold uppercase text-xs tracking-widest">Voltar aos Cursos.</Link>
+            </div>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-gray-50">

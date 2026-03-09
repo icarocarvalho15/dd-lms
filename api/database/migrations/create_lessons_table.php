@@ -16,9 +16,8 @@ return new class extends Migration
             $table->foreignId('module_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->string('video_url')->nullable();
-            $table->integer('duration_minutes')->default(0);
-            $table->integer('order')->default(0);
             $table->text('content')->nullable();
+            $table->integer('order')->default(0);
             $table->timestamps();
         });
     }
