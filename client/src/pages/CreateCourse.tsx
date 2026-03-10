@@ -6,6 +6,8 @@ import Navbar from '../components/Navbar';
 const CreateCourse = () => {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [durationMinutes, setDurationMinutes] = useState('');
+    const [image, setImage] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -14,13 +16,21 @@ const CreateCourse = () => {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('description', description);
+        formData.append('duration_minutes', durationMinutes);
+        if (image) {
+            formData.append('image', image);
+        }
         try {
-            const res = await api.post('/courses', { title, description });
+            const res = await api.post('/courses', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             navigate(`/instrutor/editar/${res.data.course.slug}`);
         } catch (error) {
             console.error("Erro ao criar curso:", error);
             setError("Não foi possível criar o curso. Por favor, tente novamente mais tarde.");
-            alert("Erro ao criar curso. Verifique se os campos estão preenchidos.");
         } finally {
             setLoading(false);
         }
@@ -82,10 +92,35 @@ const CreateCourse = () => {
                             required
                         />
                     </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">
+                                Duração Total (Minutos)
+                            </label>
+                            <input 
+                                type="number" 
+                                value={durationMinutes}
+                                onChange={(e) => setDurationMinutes(e.target.value)}
+                                placeholder="Ex: 120"
+                                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl font-bold text-gray-800 focus:ring-2 focus:ring-blue-600 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">
+                                Capa do Curso (Imagem)
+                            </label>
+                            <input 
+                                type="file" 
+                                onChange={(e) => setImage(e.target.files?.[0] || null)}
+                                className="w-full px-4 py-3 bg-gray-50 border-none rounded-2xl font-bold text-gray-400 text-xs"
+                                accept="image/*"
+                            />
+                        </div>
+                    </div>
                     <div className="flex gap-4">
                         <button 
                             type="button"
-                            onClick={() => navigate('/instructor')}
+                            onClick={() => navigate('/instrutor/meus-cursos')}
                             className="flex-1 bg-gray-100 text-gray-500 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-gray-200 transition-all"
                         >
                             Cancelar

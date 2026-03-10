@@ -1,14 +1,15 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
+    const [showDropdown, setShowDropdown] = useState(false);
+    const navigate = useNavigate();
     const userName = localStorage.getItem('userName') || 'Usuário';
     const userRole = localStorage.getItem('userRole') || 'aluno';
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userRole');
-        window.location.href = '/login';
+        localStorage.clear();
+        navigate('/login');
     };
 
     return (
@@ -33,24 +34,38 @@ const Navbar = () => {
                         )}
                     </div>
                 </div>
-                <div className="flex items-center gap-6">
-                    <div className="hidden sm:flex flex-col items-end border-r border-gray-200 pr-6">
-                        <span className="text-sm font-bold text-gray-900">{userName}</span>
-                        <span className={`text-[10px] font-black uppercase tracking-widest ${
-                            userRole === 'admin' ? 'text-red-500' : 
-                            userRole === 'instrutor' ? 'text-purple-600' : 'text-blue-600'
-                        }`}>
-                            {userRole === 'admin' ? 'Administrador' : 
-                             userRole === 'instrutor' ? 'Instrutor Pro' : 'Aluno Pro'}
-                        </span>
-                    </div>
+                <div className="relative">
                     <button 
-                        onClick={handleLogout}
-                        className="bg-gray-50 hover:bg-red-50 text-gray-500 hover:text-red-600 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all border border-gray-100 flex items-center gap-2 group"
+                        onClick={() => setShowDropdown(!showDropdown)}
+                        className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-2xl border border-gray-100 hover:bg-gray-100 transition-all"
                     >
-                        <span>Sair</span>
-                        <span className="transition-transform group-hover:translate-x-1">→</span>
+                        <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
+                            {userName.charAt(0)}
+                        </div>
+                        <span className="text-sm font-bold text-gray-700">{userName}</span>
+                        <span className={`text-[10px] transition-transform ${showDropdown ? 'rotate-180' : ''}`}>▼</span>
                     </button>
+                    {showDropdown && (
+                        <>
+                            <div className="fixed inset-0 z-10" onClick={() => setShowDropdown(false)}></div>
+                            
+                            <div className="absolute right-0 mt-3 w-56 bg-white rounded-[1.5rem] shadow-2xl border border-gray-50 py-3 z-20 animate-in fade-in zoom-in duration-200">
+                                <Link 
+                                    to="/perfil" 
+                                    className="flex items-center gap-3 px-6 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                                    onClick={() => setShowDropdown(false)}
+                                >
+                                    <span>👤</span> Meu Perfil
+                                </Link>
+                                <button 
+                                    onClick={handleLogout}
+                                    className="w-full flex items-center gap-3 px-6 py-3 text-sm font-bold text-red-500 hover:bg-red-50 transition-all"
+                                >
+                                    <span>🚪</span> Sair
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </nav>

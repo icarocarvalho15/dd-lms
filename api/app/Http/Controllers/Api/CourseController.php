@@ -148,10 +148,18 @@ class CourseController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'duration_minutes' => 'nullable|integer',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         /** @var \App\Models\User $user */
         $user = $request->user();
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            // Salva em storage/app/public/courses
+            $imagePath = $request->file('image')->store('courses', 'public');
+        }
 
         $course = Course::create([
             'user_id' => $user->id,
@@ -159,13 +167,14 @@ class CourseController extends Controller
             'slug' => Str::slug($request->title) . '-' . Str::random(5),
             'description' => $request->description,
             'is_published' => false,
-            'duration_minutes' => $request->duration_minutes ?? 0
+            'duration_minutes' => $request->duration_minutes ?? 0,
+            'image' => $imagePath, // Salva o caminho no banco
         ]);
 
         return response()->json([
             'message' => 'Curso criado com sucesso!',
             'course' => $course
-        ], 210);
+        ], 201);
     }
 
     public function addModule(Request $request, $courseId)
@@ -241,6 +250,40 @@ class CourseController extends Controller
         $lesson->delete();
 
         return response()->json(['message' => 'Aula excluída com sucesso']);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $course = Course::findOrFail($id);
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'duration_minutes' => 'nullable|integer',
+            'image' => 'nullable|image|max:2048',
+        ]);
+
+        $data = $request->only(['title', 'description', 'duration_minutes']);
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('courses', 'public');
+        }
+
+        $course->update($data);
+
+        return response()->json([
+            'message' => 'Curso atualizado com sucesso!',
+            'course' => $course
+        ]);
+    }
+    
+    public function updateModule(Request $request, $id)
+    {
+        $request->validate(['title' => 'required|string|max:255']);
+        $module = Module::findOrFail($id);
+        $module->update(['title' => $request->title]);
+
+        return response()->json($module);
     }
 
     public function updateLesson(Request $request, $id)

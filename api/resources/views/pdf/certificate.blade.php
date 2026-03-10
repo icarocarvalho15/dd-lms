@@ -26,7 +26,7 @@
             <h1 class="title">CERTIFICADO</h1>
             <div class="line"></div>
             <p class="subtitle">Certificamos para os devidos fins que</p>
-            <div class="name">{{ $user_name }}</div>
+            <div class="name">{{ $user_name }}<span style="color: #999;">,</span></div>
             <p class="subtitle">concluiu com êxito o treinamento de nível profissional</p>
             <div class="course">{{ $course_name }}</div>
             <p class="subtitle">com carga horária total de <strong>{{ $duration }} minutos</strong>.</p>

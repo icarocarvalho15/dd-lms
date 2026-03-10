@@ -17,10 +17,13 @@ interface Module {
 }
 
 interface CourseData {
+    image: string | null;
     id: number;
     title: string;
     is_published: boolean;
     modules: Module[];
+    duration_minutes: number;
+    description: string;
 }
 
 const EditCourse = () => {
@@ -37,6 +40,12 @@ const EditCourse = () => {
     const [lessonContent, setLessonContent] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [selectedLessonId, setSelectedLessonId] = useState<number | null>(null);
+    const [showCourseModal, setShowCourseModal] = useState(false);
+    const [editTitle, setEditTitle] = useState('');
+    const [editDescription, setEditDescription] = useState('');
+    const [editDuration, setEditDuration] = useState('');
+    const [editImage, setEditImage] = useState<File | null>(null);
+    const [courseUpdateLoading, setCourseUpdateLoading] = useState(false);
 
     const fetchCourseData = useCallback(async () => {
         try {
@@ -68,6 +77,10 @@ const EditCourse = () => {
 
     const handleOpenModal = (moduleId: number) => {
         setSelectedModuleId(moduleId);
+        setIsEditing(false);
+        setLessonTitle('');
+        setVideoUrl('');
+        setLessonContent('');
         setShowModal(true);
     };
 
@@ -98,11 +111,6 @@ const EditCourse = () => {
                     content: lessonContent
                 });
             }
-            setLessonTitle('');
-            setVideoUrl('');
-            setLessonContent('');
-            setIsEditing(false);
-            setSelectedLessonId(null);
             setShowModal(false);
             fetchCourseData();
         } catch (error) {
@@ -143,6 +151,47 @@ const EditCourse = () => {
         }
     };
 
+    const openCourseEdit = () => {
+        setEditTitle(course?.title || '');
+        setEditDescription(course?.description || '');
+        setEditDuration(course?.duration_minutes?.toString() || '');
+        setShowCourseModal(true);
+    };
+
+    const handleUpdateCourse = async () => {
+        if (!course) return;
+        setCourseUpdateLoading(true);
+        const formData = new FormData();
+        formData.append('title', editTitle);
+        formData.append('description', editDescription);
+        formData.append('duration_minutes', editDuration);
+        if (editImage) {
+            formData.append('image', editImage);
+        }
+        try {
+            await api.post(`/courses/${course.id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setShowCourseModal(false);
+            setEditImage(null);
+            fetchCourseData();
+        } catch (error) {
+            console.error("Erro ao atualizar curso:", error);
+            alert("Erro ao atualizar dados do curso.");
+        } finally {
+            setCourseUpdateLoading(false);
+        }
+    };
+
+    const handleRenameModule = async (moduleId: number, oldTitle: string) => {
+        const newTitle = prompt("Novo nome do módulo:", oldTitle);
+        if (!newTitle || newTitle === oldTitle) return;
+        try {
+            await api.put(`/modules/${moduleId}`, { title: newTitle });
+            fetchCourseData();
+        } catch { alert("Erro ao renomear módulo."); }
+    };
+
     if (error) return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
             <Navbar />
@@ -157,7 +206,7 @@ const EditCourse = () => {
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="italic text-blue-600 font-bold animate-pulse">
+          <span className="text-blue-600 font-bold animate-pulse">
             DravDev Academy...
           </span>
         </div>
@@ -180,9 +229,9 @@ const EditCourse = () => {
             <main className="pt-28 pb-12 max-w-[1000px] mx-auto px-6">
                 <div className="flex justify-between items-center mb-10">
                     <div>
-                        <h1 className="text-3xl font-black italic uppercase tracking-tighter">
-                            Editando: <span className="text-purple-600">{course.title}</span>
-                        </h1>
+                        <h3 className="text-2xl font-black uppercase tracking-tighter">
+                            <span className="text-purple-600">{course.title}</span>
+                        </h3>
                         <div className="mt-2 flex items-center gap-2">
                             <span className={`w-2 h-2 rounded-full animate-pulse ${course.is_published ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
                             <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
@@ -190,20 +239,37 @@ const EditCourse = () => {
                             </span>
                         </div>
                     </div>
-                    <button 
-                        onClick={handleTogglePublish}
-                        className={`px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center gap-2
-                        ${course.is_published 
-                            ? 'bg-red-50 text-red-500 border border-red-100 hover:bg-red-100' 
-                            : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:scale-105 shadow-purple-500/20'}`}
-                    >
-                        {course.is_published ? (
-                            <><span>⛔</span> Retirar Curso do Ar</>
-                        ) : (
-                            <><span>🚀</span> Publicar</>
-                        )}
-                    </button>
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={openCourseEdit}
+                            className="bg-gray-100 text-gray-600 px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all"
+                        >
+                            ✏️ Editar Dados do Curso
+                        </button>
+                        <button 
+                            onClick={handleTogglePublish}
+                            className={`px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center gap-2
+                            ${course.is_published 
+                                ? 'bg-red-50 text-red-500 border border-red-100 hover:bg-red-100' 
+                                : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:scale-105 shadow-purple-500/20'}`}
+                        >
+                            {course.is_published ? (
+                                <><span>⛔</span> Retirar Curso do Ar</>
+                            ) : (
+                                <><span>🚀</span> Publicar</>
+                            )}
+                        </button>
+                    </div>
                 </div>
+                {course.image && (
+                    <div className="mb-8 rounded-[2rem] overflow-hidden h-48 border border-gray-100 shadow-inner">
+                        <img 
+                            src={`${import.meta.env.VITE_API_URL.replace('/api', '')}/storage/${course.image}`} 
+                            className="w-full h-full object-cover" 
+                            alt="Capa" 
+                        />
+                    </div>
+                )}
                 <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 mb-8 flex gap-4">
                     <input 
                         type="text" 
@@ -223,7 +289,9 @@ const EditCourse = () => {
                     {course.modules.map((module) => (
                         <div key={module.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm">
                             <div className="bg-gray-50 p-6 border-b border-gray-100 flex justify-between items-center">
-                                <h3 className="font-black italic uppercase text-gray-700">📦 {module.title}</h3>
+                                <h3 className="font-black uppercase text-gray-700 flex items-center gap-2">📦 {module.title}
+                                    <button onClick={() => handleRenameModule(module.id, module.title)} className="text-xs opacity-50 hover:opacity-100">✏️</button>
+                                </h3>
                                 <div className="flex gap-3">
                                     <button 
                                         onClick={() => handleOpenModal(module.id)}
@@ -260,17 +328,48 @@ const EditCourse = () => {
                                     </div>
                                 ))}
                                 {module.lessons.length === 0 && (
-                                    <p className="text-xs text-gray-400 italic text-center py-4">Nenhuma aula neste módulo.</p>
+                                    <p className="text-xs text-gray-400 text-center py-4">Nenhuma aula neste módulo.</p>
                                 )}
                             </div>
                         </div>
                     ))}
                 </div>
             </main>
+            {showCourseModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-10 shadow-2xl overflow-y-auto max-h-[90vh]">
+                        <h2 className="text-2xl font-black italic uppercase mb-6">Editar <span className="text-blue-600">Curso</span></h2>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-2">Título</label>
+                                <input type="text" className="w-full p-4 bg-gray-50 rounded-2xl" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-2">Duração (Minutos)</label>
+                                <input type="number" className="w-full p-4 bg-gray-50 rounded-2xl" value={editDuration} onChange={(e) => setEditDuration(e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-2">Descrição</label>
+                                <textarea rows={4} className="w-full p-4 bg-gray-50 rounded-2xl resize-none" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-2">Trocar Capa</label>
+                                <input type="file" className="w-full p-4 bg-gray-50 rounded-2xl text-xs" onChange={(e) => setEditImage(e.target.files?.[0] || null)} />
+                            </div>
+                        </div>
+                        <div className="flex gap-3 mt-10">
+                            <button onClick={handleUpdateCourse} disabled={courseUpdateLoading} className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase">
+                                {courseUpdateLoading ? 'Salvando...' : 'Atualizar Curso'}
+                            </button>
+                            <button onClick={() => setShowCourseModal(false)} className="px-6 bg-gray-100 text-gray-500 py-4 rounded-2xl font-black text-[10px] uppercase">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {showModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
                     <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl animate-in fade-in zoom-in duration-300">
-                        <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-6 text-gray-900">
+                        <h2 className="text-2xl font-black uppercase tracking-tighter mb-6 text-gray-900">
                             {isEditing ? 'Editar' : 'Nova'} <span className="text-purple-600">Aula</span>
                         </h2>
                         <div className="space-y-4">
