@@ -6,14 +6,15 @@ Sistema de Gestão de Aprendizagem (LMS) desenvolvido para centralizar e organiz
 
 ### Back-end
 - **Laravel 12**: Framework PHP de última geração.
-- **MySQL**: Banco de dados relacional.
-- **Eloquent ORM**: Gestão de banco de dados e relacionamentos.
-- **DomPDF**: Geração dinâmica de certificados em PDF.
+- **SQLite/MySQL**: Suporte a banco de dados relacional (Configurado via `.env`).
+- **Eloquent ORM**: Gestão de banco de dados, relacionamentos e ordenação inteligente.
+- **DomPDF**: Geração dinâmica de certificados em PDF com carga horária.
 
 ### Front-end
 - **React + TypeScript**: Interface reativa e tipagem segura (Strict Mode).
 - **Tailwind CSS**: Estilização moderna, responsiva e com foco em UX Corporativa.
-- **Axios**: Consumo de API com interceptors para autenticação.
+- **Axios**: Consumo de API com interceptors e variáveis de ambiente (`.env`).
+- **Canvas Confetti**: Celebração visual ao concluir treinamentos.
 
 ---
 
@@ -23,7 +24,7 @@ Sistema de Gestão de Aprendizagem (LMS) desenvolvido para centralizar e organiz
 ```bash
 cd api
 composer install
-touch database/database.sql
+# Caso use SQLite: touch database/database.sqlite
 cp .env.example .env
 php artisan key:generate
 php artisan storage:link
@@ -35,6 +36,7 @@ php artisan serve
 ```bash
 cd client
 npm install
+cp .env.example .env # Configure o VITE_API_URL no seu .env
 npm run dev
 ```
 
@@ -42,16 +44,18 @@ npm run dev
 
 ## 📋 Funcionalidades Atuais
 **👨‍🎓 Visão do Aluno**
-- **[x] Dashboard Dinâmico: Visualização de progresso e estatísticas de aprendizado.**
-- **[x] Player de Aula: Sidebar interativa com módulos e status de conclusão.**
-- **[x] Certificação Automática: Geração de certificados profissionais em PDF ao atingir 100% de progresso.**
-- **[x] Links Permanentes: Validação de certificados via URLs limpas (sem prefixo /api).**
+- **[x] Dashboard Dinâmico**: Visualização de progresso e estatísticas de aprendizado.
+- **[x] Listagem Inteligente**: Cursos exibidos por ordem de lançamento (mais recentes primeiro).
+- **[x] Player de Aula**: Sidebar interativa com módulos e status de conclusão.
+- **[x] Sistema de Progresso**: Contagem de porcentagem isolada por curso.
+- **[x] Certificação Automática**: Geração de certificados com carga horária (minutos) ao atingir 100%.
+- **[x] Links Permanentes**: Validação de certificados via URLs limpas.
 
 **👨‍🏫 Visão do Instrutor (Corporativo)**
-- **[x] Gestão Colaborativa: Instrutores podem gerenciar cursos de forma centralizada.**
-- **[x] CRUD de Conteúdo: Criação e edição de Cursos, Módulos e Aulas através de modais.**
-- **[x] Controle de Publicação: Sistema de Rascunho/Publicado para controle de visibilidade.**
-- **[x] Interface Administrativa: Tabela de ações centralizada com ícones intuitivos (Ver, Editar, Excluir).**
+- **[x] Gestão Colaborativa**: Instrutores podem gerenciar cursos de forma centralizada.
+- **[x] CRUD de Conteúdo**: Criação e edição de Cursos, Módulos e Aulas através de modais.
+- **[x] Controle de Publicação**: Sistema de Rascunho/Publicado para controle de visibilidade.
+- **[x] Interface Administrativa**: Tabela de ações centralizada com ícones intuitivos.
 
 ---
 

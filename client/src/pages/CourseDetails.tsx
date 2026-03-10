@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import api from '../api/axios';
 import Navbar from '../components/Navbar';
+import confetti from 'canvas-confetti';
 
 interface Lesson {
     id: number;
@@ -21,6 +22,7 @@ interface Course {
     id: number;
     title: string;
     modules: Module[];
+    duration_minutes: number;
 }
 
 const CourseDetails = () => {
@@ -98,7 +100,7 @@ const CourseDetails = () => {
     const handleToggleComplete = useCallback(async (lessonId: number) => {
         try {
             await api.post(`/lessons/${lessonId}/complete`);
-            setCompletedLessons(prev => [...prev, lessonId]);
+            setCompletedLessons(prev => prev.includes(lessonId) ? prev : [...prev, lessonId]);
             setShowFinishedOverlay(true);
             const res = await api.get(`/courses/${slug}`);
             setCanGenerate(res.data.can_generate_certificate);
@@ -136,10 +138,21 @@ const CourseDetails = () => {
         };
     }, [currentLesson, completedLessons, handleToggleComplete]);
 
-    const totalLessons = course?.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0;
-    const progressPercentage = totalLessons > 0 
-        ? Math.round((completedLessons.length / totalLessons) * 100) 
-        : 0;
+    const allCourseLessonIds = course?.modules?.flatMap(m => m.lessons.map(l => l.id)) || [];
+    const totalLessons = allCourseLessonIds.length;
+    const lessonsCompletedInThisCourse = completedLessons.filter(id => allCourseLessonIds.includes(id));
+    const progressPercentage = totalLessons > 0 ? Math.round((lessonsCompletedInThisCourse.length / totalLessons) * 100) : 0;
+
+    useEffect(() => {
+        if (progressPercentage === 100 && !loading && course) {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#2563eb', '#9333ea', '#10b981']
+            });
+        }
+    }, [progressPercentage, loading, course]);
 
     if (error) return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">

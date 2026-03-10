@@ -19,6 +19,7 @@ class CourseController extends Controller
         
         $courses = Course::with(['instructor', 'modules.lessons'])
             ->where('is_published', true)
+            ->orderBy('id', 'desc')
             ->get();
 
         if ($user) {
@@ -47,6 +48,7 @@ class CourseController extends Controller
     public function show(string $slug)
     {
         $course = Course::with(['modules.lessons'])->where('slug', $slug)->firstOrFail();
+
         /** @var \App\Models\User $user */
         $user = Auth::guard('sanctum')->user();
 
@@ -54,16 +56,16 @@ class CourseController extends Controller
         $canGenerate = false;
 
         if ($user) {
-            $allLessonIds = $course->modules->flatMap(function ($module) {
+            $allCourseLessonIds = $course->modules->flatMap(function ($module) {
                 return $module->lessons->pluck('id');
             })->toArray();
 
             $completedIds = $user->completedLessons()
-                ->whereIn('lesson_id', $allLessonIds)
+                ->whereIn('lesson_id', $allCourseLessonIds)
                 ->pluck('lesson_id')
                 ->toArray();
 
-            $totalLessons = count($allLessonIds);
+            $totalLessons = count($allCourseLessonIds);
             $completedCount = count($completedIds);
 
             $canGenerate = ($totalLessons > 0 && $completedCount === $totalLessons);

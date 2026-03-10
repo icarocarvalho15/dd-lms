@@ -9,7 +9,20 @@ class Course extends Model
 {
     use HasFactory;
     
-    protected $guarded = [];
+    protected $fillable = [
+        'title',
+        'slug',
+        'description',
+        'image',
+        'user_id',
+        'is_published',
+        'duration_minutes',
+    ];
+
+    protected $casts = [
+        'duration_minutes' => 'integer',
+        'is_published' => 'boolean',
+    ];
 
     public function modules()
     {

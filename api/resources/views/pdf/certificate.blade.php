@@ -29,7 +29,8 @@
             <div class="name">{{ $user_name }}</div>
             <p class="subtitle">concluiu com êxito o treinamento de nível profissional</p>
             <div class="course">{{ $course_name }}</div>
-            <p class="subtitle" style="margin-top: 30px">concluído em {{ $date }}</p>
+            <p class="subtitle">com carga horária total de <strong>{{ $duration }} minutos</strong>.</p>
+            <p class="subtitle" style="margin-top: 30px">Concluído em {{ $date }}.</p>
             <div class="footer">
                 <span class="footer-text">
                     Código de Verificação: <strong>{{ $certificate_code }}</strong><br>

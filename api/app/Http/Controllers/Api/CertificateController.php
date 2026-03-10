@@ -33,18 +33,24 @@ class CertificateController extends Controller
 
     public function viewPublic($hash)
     {
-        $cert = Certificate::with(['user', 'course'])->where('hash', $hash)->firstOrFail();
+        $cert = Certificate::with('course')->where('hash', $hash)->firstOrFail();
+
+        $cert->course->refresh(); 
         
         $data = [
             'user_name' => $cert->user->name,
             'course_name' => $cert->course->title,
             'date' => $cert->created_at->format('d/m/Y'),
+            'duration' => $cert->course->duration_minutes, //
             'certificate_code' => strtoupper(substr($hash, 0, 10))
         ];
 
         $pdf = Pdf::loadView('pdf.certificate', $data)->setPaper('a4', 'landscape');
         
-        return $pdf->stream("Certificado-{$cert->course->slug}.pdf");
+        return $pdf->stream("Certificado-{$cert->course->slug}.pdf", [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="Certificado.pdf"'
+        ]);
     }
 
     public function generate(Request $request, $slug)
@@ -83,6 +89,7 @@ class CertificateController extends Controller
             'user_name' => $user->name,
             'course_name' => $course->title,
             'date' => now()->format('d/m/Y'),
+            'duration' => $course->duration_minutes,
             'certificate_code' => strtoupper(Str::random(10))
         ];
 
