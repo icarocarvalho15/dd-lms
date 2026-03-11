@@ -50,7 +50,7 @@ const CreateCourse = () => {
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="italic text-blue-600 font-bold animate-pulse">
+          <span className=" text-blue-600 font-bold animate-pulse">
             DravDev Academy...
           </span>
         </div>
@@ -62,7 +62,7 @@ const CreateCourse = () => {
             <Navbar />
             <div className="max-w-3xl mx-auto">
                 <header className="mb-10 text-center">
-                    <h1 className="text-3xl font-black italic uppercase tracking-tighter">Criar Novo Treinamento</h1>
+                    <h1 className="text-3xl font-black  uppercase tracking-tighter">Criar Novo Treinamento</h1>
                     <p className="text-gray-500">Defina o nome e a proposta do seu curso.</p>
                 </header>
                 <form onSubmit={handleSubmit} className="bg-white p-10 rounded-[2.5rem] shadow-xl border border-gray-100">

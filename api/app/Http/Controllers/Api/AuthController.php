@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -53,6 +54,39 @@ class AuthController extends Controller
             'name'  => $request->user()->name,
             'email' => $request->user()->email,
             'role'  => $request->user()->role,
+            'phone' => $request->user()->phone,
         ]);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        $request->validate([
+            'phone' => 'nullable|string|max:20',
+            'password' => [
+                'nullable',
+                'confirmed',
+                Password::min(8)
+                ->letters()
+                ->mixedCase()
+                ->numbers()
+                ->symbols(),
+            ],
+        ]);
+
+        $user->phone = $request->phone;
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        try {
+            $user->save();
+            return response()->json(['message' => 'Sucesso', 'user' => $user]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Erro no banco: ' . $e->getMessage()], 500);
+        }
     }
 }

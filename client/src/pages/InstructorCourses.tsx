@@ -57,7 +57,7 @@ const InstructorDashboard = () => {
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="italic text-blue-600 font-bold animate-pulse">
+          <span className=" text-blue-600 font-bold animate-pulse">
             DravDev Academy...
           </span>
         </div>
@@ -80,7 +80,7 @@ const InstructorDashboard = () => {
             <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-10">
                     <div>
-                        <h1 className="text-3xl font-black italic uppercase tracking-tighter">Área do Instrutor</h1>
+                        <h1 className="text-3xl font-black  uppercase tracking-tighter">Área do Instrutor</h1>
                         <p className="text-gray-500">Gerencie seus treinamentos e acompanhe seus alunos.</p>
                     </div>
                     <Link 

@@ -7,6 +7,7 @@ interface DashboardCourse {
     id: number;
     title: string;
     slug: string;
+    image: string | null;
     progress_percentage: number;
     certificate_hash: string | null;
 }
@@ -57,7 +58,7 @@ const Dashboard = () => {
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="italic text-blue-600 font-bold animate-pulse">
+          <span className=" text-blue-600 font-bold animate-pulse">
             DravDev Academy...
           </span>
         </div>
@@ -79,7 +80,7 @@ const Dashboard = () => {
             <Navbar />
             <main className="pt-28 max-w-7xl mx-auto px-4">
                 <header className="mb-10">
-                    <h1 className="text-4xl font-black italic uppercase tracking-tighter text-gray-900">
+                    <h1 className="text-4xl font-black  uppercase tracking-tighter text-gray-900">
                         Olá, {data.user.name.split(' ')[0]}! 👋
                     </h1>
                     <p className="text-gray-500 font-medium">Continue de onde você parou.</p>
@@ -87,24 +88,39 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                     <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Cursos Iniciados</span>
-                        <div className="text-5xl font-black italic text-blue-600">{data.stats.started}</div>
+                        <div className="text-5xl font-black  text-blue-600">{data.stats.started}</div>
                     </div>
                     <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Certificados Conquistados</span>
-                        <div className="text-5xl font-black italic text-yellow-500">{data.stats.completed}</div>
+                        <div className="text-5xl font-black  text-yellow-500">{data.stats.completed}</div>
                     </div>
                 </div>
-                <h2 className="text-xl font-bold uppercase italic mb-6">Meus Treinamentos</h2>
+                <h2 className="text-xl font-bold uppercase  mb-6">Meus Treinamentos</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-20">
                     {data.courses.map((course: DashboardCourse) => (
                         <div key={course.id} className="bg-white rounded-[2.5rem] overflow-hidden shadow-xl border border-gray-100 flex flex-col hover:scale-[1.02] transition-transform duration-300">
-                            <div className="h-48 bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-6xl font-black italic shadow-inner">
-                                {course.title.charAt(0)}
+                            <div className="h-48 bg-gray-200 relative overflow-hidden flex items-center justify-center shadow-inner">
+                                {course.image ? (
+                                    <img 
+                                        src={`${api.defaults.baseURL?.replace('/api', '')}/storage/${course.image}`} 
+                                        alt={course.title}
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-6xl font-black">
+                                        {course.title.charAt(0)}
+                                    </div>
+                                )}
+                                <div className="absolute bottom-4 left-4 z-10">
+                                    <span className="bg-black/30 backdrop-blur-md px-3 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest">
+                                        {course.progress_percentage === 100 ? 'Concluído' : 'Em Andamento'}
+                                    </span>
+                                </div>
                             </div>
                             <div className="p-8 flex-1 flex flex-col">
                                 <h3 className="text-xl font-bold leading-tight mb-4 text-gray-800">{course.title}</h3>
                                 <div className="mb-6">
-                                    <div className="flex justify-between text-xs font-bold mb-2 uppercase italic">
+                                    <div className="flex justify-between text-xs font-bold mb-2 uppercase">
                                         <span className="text-gray-400">Seu Progresso</span>
                                         <span className="text-blue-600">{course.progress_percentage}%</span>
                                     </div>

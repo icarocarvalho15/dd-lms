@@ -47,7 +47,14 @@ class CourseController extends Controller
 
     public function show(string $slug)
     {
-        $course = Course::with(['modules.lessons'])->where('slug', $slug)->firstOrFail();
+        $course = Course::with([
+            'modules' => function($query) {
+                $query->orderBy('order', 'asc');
+            },
+            'modules.lessons' => function($query) {
+                $query->orderBy('order', 'asc');
+            }
+        ])->where('slug', $slug)->firstOrFail();
 
         /** @var \App\Models\User $user */
         $user = Auth::guard('sanctum')->user();
@@ -95,11 +102,13 @@ class CourseController extends Controller
 
         if (!$user) return response()->json(['message' => 'User not found'], 401);
 
+        $completedLessonIds = $user->completedLessons()->pluck('lesson_id')->toArray();
+
         $courses = Course::with(['modules.lessons', 'instructor', 'certificates' => function($q) use ($user) {
-            $q->where('user_id', $user->id);
-        }])
-        ->where('is_published', true)
-        ->get();
+                $q->where('user_id', $user->id);
+            }])
+            ->where('is_published', true)
+            ->get();
 
         $enrolledCourses = [];
         $stats = ['started' => 0, 'completed' => 0];
@@ -109,17 +118,16 @@ class CourseController extends Controller
             $totalLessons = count($lessonIds);
 
             if ($totalLessons > 0) {
-                $completedCount = $user->completedLessons()
-                    ->whereIn('lesson_id', $lessonIds)
-                    ->distinct()
-                    ->count();
+                $completedCount = count(array_intersect($lessonIds, $completedLessonIds));
 
                 $progress = (int) round(($completedCount / $totalLessons) * 100);
 
                 if ($progress > 0) {
                     $course->progress_percentage = $progress;
                     $course->certificate_hash = $course->certificates->first()?->hash;
+                    
                     $enrolledCourses[] = $course;
+                    
                     $stats['started']++;
                     if ($progress === 100) $stats['completed']++;
                 }
@@ -127,7 +135,11 @@ class CourseController extends Controller
         }
 
         return response()->json([
-            'user' => $user,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
             'stats' => $stats,
             'courses' => $enrolledCourses
         ]);
@@ -299,5 +311,19 @@ class CourseController extends Controller
         $lesson->update($request->all());
 
         return response()->json($lesson);
+    }
+    
+    public function reorderLessons(Request $request, $id)
+    {
+        $lessonOrder = $request->input('lessons'); 
+
+        foreach ($lessonOrder as $index => $lessonId) {
+            Lesson::where('id', $lessonId)->update([
+                'order' => $index + 1,
+                'module_id' => $id
+            ]);
+        }
+
+        return response()->json(['message' => 'Ordem atualizada com sucesso!']);
     }
 }

@@ -8,6 +8,7 @@ interface Course {
     title: string;
     slug: string;
     description: string;
+    image: string | null;
     progress_percentage: number;
     instructor?: { name: string };
 }
@@ -45,7 +46,7 @@ const CourseList = () => {
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="italic text-blue-600 font-bold animate-pulse">
+          <span className=" text-blue-600 font-bold animate-pulse">
             DravDev Academy...
           </span>
         </div>
@@ -64,11 +65,24 @@ const CourseList = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {courses.map(course => (
                             <div key={course.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                                <div className="h-48 bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white relative">
-                                <span className="text-6xl font-bold opacity-20 group-hover:scale-110 transition-transform">{course.title[0]}</span>
-                                <div className="absolute bottom-4 left-4">
-                                    <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold">Vídeo Aula</span>
-                                </div>
+                                <div className="h-48 bg-gray-200 relative overflow-hidden flex items-center justify-center">
+                                    {course.image ? (
+                                        <img 
+                                            src={`${import.meta.env.VITE_API_URL.replace('/api', '')}/storage/${course.image}`} 
+                                            alt={course.title}
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white">
+                                            <span className="text-6xl font-bold opacity-20 group-hover:scale-110 transition-transform">{course.title[0]}</span>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="absolute bottom-4 left-4 z-10">
+                                        <span className="bg-black/30 backdrop-blur-md px-3 py-1 rounded-full text-white text-[10px] font-black uppercase tracking-widest">
+                                            Treinamento
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className="p-6">
                                     <h2 className="text-xl font-bold mb-2 text-gray-800 group-hover:text-blue-600 transition-colors">{course.title}</h2>

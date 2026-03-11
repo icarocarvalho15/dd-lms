@@ -9,7 +9,7 @@ import Dashboard from './pages/Dashboard';
 import InstructorCourses from './pages/InstructorCourses';
 import CreateCourse from './pages/CreateCourse';
 import EditCourse from './pages/EditCourse';
-//import Profile from './pages/Profile';
+import Profile from './pages/Profile';
 
 interface UserResponse {
   id: number;
@@ -44,7 +44,7 @@ function App() {
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="italic text-blue-600 font-bold animate-pulse">
+          <span className=" text-blue-600 font-bold animate-pulse">
             DravDev Academy...
           </span>
         </div>
@@ -60,7 +60,7 @@ function App() {
           <Route path="/" element={<CourseList />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/curso/:slug" element={<CourseDetails />} />
-          {/* <Route path="/perfil" element={<Profile />} /> */}
+          <Route path="/perfil" element={<Profile />} />
         </Route>
         <Route element={<ProtectedRoute allowedRoles={['instrutor', 'admin']} />}>
           <Route path="/instrutor/meus-cursos" element={<InstructorCourses />} />

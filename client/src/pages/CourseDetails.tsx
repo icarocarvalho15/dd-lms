@@ -4,6 +4,7 @@ import { AxiosError } from 'axios';
 import api from '../api/axios';
 import Navbar from '../components/Navbar';
 import confetti from 'canvas-confetti';
+import 'react-quill-new/dist/quill.snow.css';
 
 interface Lesson {
     id: number;
@@ -168,7 +169,7 @@ const CourseDetails = () => {
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="italic text-blue-600 font-bold animate-pulse">
+          <span className=" text-blue-600 font-bold animate-pulse">
             DravDev Academy...
           </span>
         </div>
@@ -198,7 +199,7 @@ const CourseDetails = () => {
                                 {showFinishedOverlay && (
                                     <div className="absolute inset-0 bg-blue-900/90 backdrop-blur-sm flex flex-col items-center justify-center text-white z-30 text-center p-4 animate-in fade-in">
                                         <div className="text-6xl mb-4 animate-bounce">🎉</div>
-                                        <h2 className="text-3xl font-bold mb-4 uppercase italic">Aula Concluída!</h2>
+                                        <h2 className="text-3xl font-bold mb-4 uppercase">Aula Concluída!</h2>
                                         <button 
                                             onClick={() => setShowFinishedOverlay(false)}
                                             className="bg-white text-blue-900 px-8 py-3 rounded-full font-bold text-xs uppercase"
@@ -218,17 +219,23 @@ const CourseDetails = () => {
                                     />
                                 </div>
                             )}
-                            <h1 className="text-3xl font-black italic uppercase tracking-tighter text-gray-900 mb-6">
+                            <h1 className="text-3xl font-black  uppercase tracking-tighter text-gray-900 mb-6">
                                 {currentLesson.title}
                             </h1>
-                            <div className="prose prose-blue max-w-none text-gray-600 border-t pt-8 mt-4 whitespace-pre-wrap">
-                                {currentLesson.content || <span className="italic text-gray-400">Sem material de texto.</span>}
+                            <div className="ql-snow mt-8">
+                                <div 
+                                    className="ql-editor prose prose-blue max-w-none text-gray-600 border-t pt-8 mt-4 leading-relaxed"
+                                    style={{ padding: '20px 0', minHeight: 'auto', lineHeight: '1.8' }}
+                                    dangerouslySetInnerHTML={{ 
+                                        __html: currentLesson.content || '<span class=" text-gray-400">Sem material de texto.</span>' 
+                                    }}
+                                />
                             </div>
                             <div className="mt-12 pt-8 border-t flex justify-end items-center">
                                 {canGenerate ? (
                                     <button 
                                         onClick={handleDownloadCertificate}
-                                        className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-10 py-4 rounded-2xl font-black italic uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-xl shadow-orange-500/20 flex items-center gap-3 animate-bounce"
+                                        className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-10 py-4 rounded-2xl font-black  uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-xl shadow-orange-500/20 flex items-center gap-3 animate-bounce"
                                     >
                                         🎓 Gerar Certificado
                                     </button>
@@ -236,7 +243,7 @@ const CourseDetails = () => {
                                     completedLessons.includes(currentLesson.id) && (
                                         <button 
                                             onClick={handleNextLesson}
-                                            className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black italic uppercase text-xs tracking-widest hover:bg-blue-700 transition-all shadow-lg"
+                                            className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black  uppercase text-xs tracking-widest hover:bg-blue-700 transition-all shadow-lg"
                                         >
                                             Próxima Aula ➔
                                         </button>
@@ -247,12 +254,12 @@ const CourseDetails = () => {
                     </div>
                     <div className="w-full lg:w-96 bg-white rounded-2xl shadow-sm border border-gray-200 h-fit overflow-hidden">
                         <div className="p-6 border-b border-gray-100">
-                            <h3 className="font-bold text-lg uppercase italic tracking-tighter">Conteúdo do Treinamento</h3>
+                            <h3 className="font-bold text-lg uppercase  tracking-tighter">Conteúdo do Treinamento</h3>
                         </div>
                         <div className="p-6 bg-gray-50/50">
                             <div className="flex justify-between items-center mb-3">
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Progresso Geral</span>
-                                <span className="text-sm font-bold text-blue-600 italic">{progressPercentage}%</span>
+                                <span className="text-sm font-bold text-blue-600">{progressPercentage}%</span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-1.5 shadow-inner">
                                 <div 
@@ -296,7 +303,7 @@ const CourseDetails = () => {
                                                     <span className="opacity-50 text-xs">
                                                         {isLocked ? '🔒' : (lesson.video_url ? '🎥' : '📄')}
                                                     </span>
-                                                    <span className={`text-sm ${currentLesson.id === lesson.id ? 'text-blue-700 font-bold italic' : 'text-gray-600'}`}>
+                                                    <span className={`text-sm ${currentLesson.id === lesson.id ? 'text-blue-700 font-bold' : 'text-gray-600'}`}>
                                                         {lesson.title}
                                                     </span>
                                                 </button>
