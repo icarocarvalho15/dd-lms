@@ -59,4 +59,22 @@ npm run dev
 
 ---
 
+## 🚀 Sprint: Sistema de Certificação e Avaliações
+
+Nesta etapa, transformamos a plataforma em uma escola real, com validação de aprendizado e gestão inteligente de mídia.
+
+### 🆕 Novidades
+- **Sistema de Quizzes dinâmicos**: Instrutores agora podem configurar avaliações finais para cada curso com nota mínima de aprovação.
+- **Arquitetura Desacoplada**: Criação do `QuizController` para gerenciar perguntas, opções e correções de forma independente.
+- **Gestão de Mídia Otimizada**: Implementada a exclusão física de arquivos de imagem no servidor ao atualizar ou deletar cursos (evitando arquivos órfãos).
+- **Trilha de Aprendizado Blindada**: O certificado agora possui lógica de precedência: 100% das aulas concluídas + Aprovação na Avaliação Final.
+- **QuizPlayer Component**: Interface interativa para o aluno realizar a prova no lugar do conteúdo da aula.
+
+### 🛠️ Tecnologias/Padrões Implementados
+- **Eager Loading**: Otimização de queries N+1 para carregar cursos e progresso no Dashboard.
+- **Relacionamentos Eloquent**: `Course` -> `Quiz` -> `Questions` -> `Options`.
+- **UX/UI**: Bloqueio dinâmico do menu lateral e estado de aprovação em tempo real com React.
+
+---
+
 Desenvolvido por Ícaro Carvalho (DravDev)

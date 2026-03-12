@@ -38,4 +38,8 @@ class Course extends Model
     {
         return $this->hasMany(Certificate::class);
     }
+
+    public function quiz() {
+        return $this->hasOne(Quiz::class);
+    }
 }

@@ -115,6 +115,21 @@ const CreateCourse = () => {
                                 className="w-full px-4 py-3 bg-gray-50 border-none rounded-2xl font-bold text-gray-400 text-xs"
                                 accept="image/*"
                             />
+                            {image && (
+                                <div className="mt-4 relative h-20 w-32 rounded-lg overflow-hidden border-2 border-blue-500">
+                                    <img 
+                                        src={URL.createObjectURL(image)} 
+                                        className="w-full h-full object-cover" 
+                                        alt="Preview" 
+                                    />
+                                    <button 
+                                        onClick={() => setImage(null)}
+                                        className="absolute top-0 right-0 bg-red-500 text-white text-[8px] p-1 uppercase font-black"
+                                    >
+                                        Remover
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="flex gap-4">

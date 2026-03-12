@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Models\Module;
 use App\Models\Lesson;
@@ -48,12 +49,9 @@ class CourseController extends Controller
     public function show(string $slug)
     {
         $course = Course::with([
-            'modules' => function($query) {
-                $query->orderBy('order', 'asc');
-            },
-            'modules.lessons' => function($query) {
-                $query->orderBy('order', 'asc');
-            }
+            'modules' => function($query) {$query->orderBy('order', 'asc');},
+            'modules.lessons' => function($query) {$query->orderBy('order', 'asc');},
+            'quiz.questions.options'
         ])->where('slug', $slug)->firstOrFail();
 
         /** @var \App\Models\User $user */
@@ -63,10 +61,7 @@ class CourseController extends Controller
         $canGenerate = false;
 
         if ($user) {
-            $allCourseLessonIds = $course->modules->flatMap(function ($module) {
-                return $module->lessons->pluck('id');
-            })->toArray();
-
+            $allCourseLessonIds = $course->modules->flatMap->lessons->pluck('id')->toArray();
             $completedIds = $user->completedLessons()
                 ->whereIn('lesson_id', $allCourseLessonIds)
                 ->pluck('lesson_id')
@@ -75,7 +70,9 @@ class CourseController extends Controller
             $totalLessons = count($allCourseLessonIds);
             $completedCount = count($completedIds);
 
-            $canGenerate = ($totalLessons > 0 && $completedCount === $totalLessons);
+            $allLessonsDone = ($totalLessons > 0 && $completedCount === $totalLessons);
+            
+            $canGenerate = $allLessonsDone; 
         }
 
         return response()->json([
@@ -278,13 +275,16 @@ class CourseController extends Controller
         $data = $request->only(['title', 'description', 'duration_minutes']);
 
         if ($request->hasFile('image')) {
+            if ($course->image) {
+                Storage::disk('public')->delete($course->image);
+            }
             $data['image'] = $request->file('image')->store('courses', 'public');
         }
 
         $course->update($data);
 
         return response()->json([
-            'message' => 'Curso atualizado com sucesso!',
+            'message' => 'Curso atualizado e mídia antiga removida!',
             'course' => $course
         ]);
     }
@@ -325,5 +325,18 @@ class CourseController extends Controller
         }
 
         return response()->json(['message' => 'Ordem atualizada com sucesso!']);
+    }
+
+    public function destroy($id)
+    {
+        $course = Course::findOrFail($id);
+
+        if ($course->image) {
+            Storage::disk('public')->delete($course->image);
+        }
+
+        $course->delete();
+
+        return response()->json(['message' => 'Curso e capa excluídos com sucesso!']);
     }
 }

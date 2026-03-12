@@ -19,14 +19,31 @@ interface Module {
     lessons: Lesson[];
 }
 
+interface QuizOption {
+    option_text: string;
+    is_correct: boolean;
+}
+
+interface QuizQuestion {
+    question_text: string;
+    options: QuizOption[];
+}
+
+interface QuizData {
+    id: number;
+    min_score: number;
+    questions: QuizQuestion[];
+}
+
 interface CourseData {
-    image: string | null;
     id: number;
     title: string;
     is_published: boolean;
     modules: Module[];
+    image: string | null;
     duration_minutes: number;
     description: string;
+    quiz?: QuizData;
 }
 
 const EditCourse = () => {
@@ -49,6 +66,16 @@ const EditCourse = () => {
     const [editDuration, setEditDuration] = useState('');
     const [editImage, setEditImage] = useState<File | null>(null);
     const [courseUpdateLoading, setCourseUpdateLoading] = useState(false);
+    const [hasQuiz, setHasQuiz] = useState(false);
+    const [showQuizModal, setShowQuizModal] = useState(false);
+    const [quizMinScore, setQuizMinScore] = useState(70);
+
+    const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([
+        { question_text: '', options: [
+            { option_text: '', is_correct: true },
+            { option_text: '', is_correct: false }
+        ]}
+    ]);
 
     const quillModules = {
         toolbar: [
@@ -66,7 +93,8 @@ const EditCourse = () => {
     const fetchCourseData = useCallback(async () => {
         try {
             const res = await api.get(`/courses/${slug}`);
-            setCourse(res.data.course); 
+            setCourse(res.data.course);
+            setHasQuiz(!!res.data.course.quiz);
         } catch {
             alert("Erro ao carregar dados do curso.");
             setError("Não foi possível editar o curso. Por favor, tente novamente mais tarde.");
@@ -246,6 +274,49 @@ const EditCourse = () => {
         }
     };
 
+    const openQuizModal = () => {
+        if (course?.quiz) {
+            setQuizMinScore(course.quiz.min_score);
+            const mappedQuestions: QuizQuestion[] = course.quiz.questions.map((q) => ({
+                question_text: q.question_text,
+                options: q.options.map((o) => ({
+                    option_text: o.option_text,
+                    is_correct: !!o.is_correct
+                }))
+            }));
+            setQuizQuestions(mappedQuestions);
+        } else {
+            setQuizMinScore(70);
+            setQuizQuestions([{ 
+                question_text: '', 
+                options: [{ option_text: '', is_correct: true }, { option_text: '', is_correct: false }] 
+            }]);
+        }
+        setShowQuizModal(true);
+    };
+
+    const addQuestion = () => {
+        setQuizQuestions([...quizQuestions, { 
+            question_text: '', 
+            options: [{ option_text: '', is_correct: true }, { option_text: '', is_correct: false }] 
+        }]);
+    };
+
+    const addOption = (qIndex: number) => {
+        const newQuestions = [...quizQuestions];
+        newQuestions[qIndex].options.push({ option_text: '', is_correct: false });
+        setQuizQuestions(newQuestions);
+    };
+
+    const setCorrectOption = (qIndex: number, oIndex: number) => {
+        const newQuestions = [...quizQuestions];
+        newQuestions[qIndex].options = newQuestions[qIndex].options.map((opt, i) => ({
+            ...opt,
+            is_correct: i === oIndex
+        }));
+        setQuizQuestions(newQuestions);
+    };
+
     if (error) return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
             <Navbar />
@@ -339,6 +410,20 @@ const EditCourse = () => {
                         + Módulo
                     </button>
                 </div>
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 mb-8 flex items-center justify-between">
+                    <div>
+                        <h4 className="font-black uppercase text-xs tracking-widest text-gray-700">Avaliação de Certificação</h4>
+                        <p className="pt-2 text-sm text-gray-600">
+                            {hasQuiz ? "✅ Este curso possui avaliação para certificação." : "❌ Sem avaliação configurada."}
+                        </p>
+                    </div>
+                    <button 
+                        onClick={openQuizModal}
+                        className="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
+                    >
+                        {hasQuiz ? "Editar Avaliação" : "+ Criar Avaliação"}
+                    </button>
+                </div>
                 <DragDropContext onDragEnd={onDragEnd}>
                     <div className="space-y-6">
                         {course.modules.map((module) => (
@@ -424,6 +509,21 @@ const EditCourse = () => {
                             <div>
                                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-2">Trocar Capa</label>
                                 <input type="file" className="w-full p-4 bg-gray-50 rounded-2xl text-xs" onChange={(e) => setEditImage(e.target.files?.[0] || null)} />
+                                {editImage && (
+                                    <div className="mt-4 relative h-20 w-32 rounded-lg overflow-hidden border-2 border-blue-500">
+                                        <img 
+                                            src={URL.createObjectURL(editImage)} 
+                                            className="w-full h-full object-cover" 
+                                            alt="Preview" 
+                                        />
+                                        <button 
+                                            onClick={() => setEditImage(null)}
+                                            className="absolute top-0 right-0 bg-red-500 text-white text-[8px] p-1 uppercase font-black"
+                                        >
+                                            Remover
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="flex gap-3 mt-10">
@@ -492,6 +592,124 @@ const EditCourse = () => {
                                     setVideoUrl('');
                                     setLessonContent('');
                                 }}
+                                className="px-6 bg-gray-100 text-gray-500 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showQuizModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-4xl rounded-[2.5rem] p-10 shadow-2xl max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-8">
+                            <h2 className="text-2xl font-black uppercase italic tracking-tighter">
+                                Configurar <span className="text-purple-600">Avaliação Final</span>
+                            </h2>
+                            <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-2xl">
+                                <span className="text-[10px] font-black uppercase text-gray-400">Nota Mínima (%)</span>
+                                <input 
+                                    type="number" 
+                                    className="w-16 bg-transparent font-bold text-purple-600 outline-none"
+                                    value={quizMinScore}
+                                    onChange={(e) => setQuizMinScore(parseInt(e.target.value))}
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-8">
+                            {quizQuestions.map((q, qIndex) => (
+                                <div key={qIndex} className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 relative">
+                                    <button 
+                                        onClick={() => setQuizQuestions(quizQuestions.filter((_, i) => i !== qIndex))}
+                                        className="absolute top-6 right-6 text-red-400 hover:text-red-600 font-bold text-xs uppercase"
+                                    >
+                                        Excluir Pergunta
+                                    </button>
+                                    <div className="mb-4">
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">Pergunta {qIndex + 1}</label>
+                                        <input 
+                                            type="text"
+                                            className="w-full p-4 bg-white rounded-2xl border-none shadow-sm outline-none focus:ring-2 focus:ring-purple-500/20"
+                                            placeholder="Ex: Qual o comando para criar uma migration no Laravel?"
+                                            value={q.question_text}
+                                            onChange={(e) => {
+                                                const newQuestions = [...quizQuestions];
+                                                newQuestions[qIndex].question_text = e.target.value;
+                                                setQuizQuestions(newQuestions);
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">Alternativas (Marque a correta)</label>
+                                        {q.options.map((opt, oIndex) => (
+                                            <div key={oIndex} className="flex items-center gap-3">
+                                                <input 
+                                                    type="radio"
+                                                    name={`correct-${qIndex}`}
+                                                    checked={opt.is_correct}
+                                                    onChange={() => setCorrectOption(qIndex, oIndex)}
+                                                    className="w-5 h-5 accent-purple-600"
+                                                />
+                                                <input 
+                                                    type="text"
+                                                    className={`flex-1 p-3 rounded-xl border-none text-sm transition-all ${opt.is_correct ? 'bg-purple-50 ring-1 ring-purple-200' : 'bg-white'}`}
+                                                    placeholder={`Alternativa ${oIndex + 1}`}
+                                                    value={opt.option_text}
+                                                    onChange={(e) => {
+                                                        const newQuestions = [...quizQuestions];
+                                                        newQuestions[qIndex].options[oIndex].option_text = e.target.value;
+                                                        setQuizQuestions(newQuestions);
+                                                    }}
+                                                />
+                                                {q.options.length > 2 && (
+                                                    <button onClick={() => {
+                                                        const newQuestions = [...quizQuestions];
+                                                        newQuestions[qIndex].options.splice(oIndex, 1);
+                                                        setQuizQuestions(newQuestions);
+                                                    }} className="text-gray-300 hover:text-red-500">✕</button>
+                                                )}
+                                            </div>
+                                        ))}
+                                        <button 
+                                            onClick={() => addOption(qIndex)}
+                                            className="text-[10px] font-black uppercase text-purple-600 mt-2 ml-8 hover:underline"
+                                        >
+                                            + Adicionar Alternativa
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-10 flex gap-4">
+                            <button 
+                                onClick={addQuestion}
+                                className="flex-1 border-2 border-dashed border-gray-200 text-gray-400 py-4 rounded-3xl font-black uppercase text-[10px] hover:border-purple-300 hover:text-purple-400 transition-all"
+                            >
+                                + Adicionar Pergunta
+                            </button>
+                        </div>
+                        <div className="mt-10 pt-8 border-t flex gap-3">
+                            <button 
+                                onClick={async () => {
+                                    try {
+                                        await api.post(`/courses/${course?.id}/quiz`, {
+                                            min_score: quizMinScore,
+                                            questions: quizQuestions
+                                        });
+                                        setShowQuizModal(false);
+                                        fetchCourseData();
+                                    } catch (error) {
+                                        console.error("Erro ao buscar cursos:", error);
+                                        alert("Erro ao salvar quiz.");
+                                    }
+                                }}
+                                className="px-6 bg-purple-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
+                            >
+                                Salvar Avaliação
+                            </button>
+                            <button 
+                                onClick={() => setShowQuizModal(false)}
                                 className="px-6 bg-gray-100 text-gray-500 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all"
                             >
                                 Cancelar

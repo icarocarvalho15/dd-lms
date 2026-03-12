@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\CertificateController;
+use App\Http\Controllers\Api\QuizController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -23,6 +24,8 @@ Route::middleware(['auth:sanctum', 'role:admin,instrutor'])->group(function () {
     Route::post('/courses', [CourseController::class, 'store']);
     Route::patch('/courses/{id}/toggle-publish', [CourseController::class, 'togglePublish']);
     Route::post('/courses/{id}', [CourseController::class, 'update']);
+    Route::post('/courses/{id}/quiz', [QuizController::class, 'store']);
+    Route::post('/courses/{id}/quiz/submit', [QuizController::class, 'submit']);
     Route::post('/courses/{courseId}/modules', [CourseController::class, 'addModule']);
     Route::get('/instructor/courses', [CourseController::class, 'instructorCourses']);
     Route::delete('/modules/{id}', [CourseController::class, 'deleteModule']);
