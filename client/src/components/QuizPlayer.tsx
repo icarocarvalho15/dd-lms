@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import api from '../api/axios';
 import QuizResultModal from '../components/QuizResultModal';
+import type { AxiosError } from 'axios';
 
 export interface Option {
     id: number;
@@ -24,6 +25,7 @@ interface QuizPlayerProps {
     courseId: number;
     onComplete: (score: number) => void;
     handleDownloadCertificate: () => void;
+    setIsQuizActive: (active: boolean) => void;
 }
 
 const QuizPlayer = ({ quiz, courseId, onComplete, handleDownloadCertificate }: QuizPlayerProps) => {
@@ -57,12 +59,17 @@ const QuizPlayer = ({ quiz, courseId, onComplete, handleDownloadCertificate }: Q
                 passed: res.data.passed,
                 score: res.data.score,
                 minScore: res.data.min_score,
-                attemptsLeft: res.data.attempts_left
+                attemptsLeft: res.data.attempts_left ?? 0
             });
             setShowResultModal(true);
         } catch (error) {
-            console.error(error);
-            alert("Erro ao processar sua avaliação.");
+            const axiosError = error as AxiosError<{ message?: string, error?: string }>;
+            if (axiosError.response?.status === 403) {
+                alert(axiosError.response.data.error || "Limite de tentativas esgotado.");
+                onComplete(-1);
+            } else {
+                alert("Erro ao processar sua avaliação.");
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -128,12 +135,15 @@ const QuizPlayer = ({ quiz, courseId, onComplete, handleDownloadCertificate }: Q
                 score={resultData.score}
                 minScore={resultData.minScore}
                 attemptsLeft={resultData.attemptsLeft}
-                onClose={() => setShowResultModal(false)}
                 onRetry={handleRetry}
                 onGenerate={() => {
                     setShowResultModal(false);
                     onComplete(resultData.score);
                     handleDownloadCertificate();
+                }}
+                onClose={() => {
+                    setShowResultModal(false);
+                    onComplete(resultData.passed ? resultData.score : -1);
                 }}
             />
         </div>

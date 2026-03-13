@@ -62,35 +62,45 @@ class CourseController extends Controller
         $canGenerate = false;
 
         if ($user) {
-            $allCourseLessonIds = $course->modules->flatMap->lessons->pluck('id')->toArray();
-            $completedIds = $user->completedLessons()
-                ->whereIn('lesson_id', $allCourseLessonIds)
-                ->pluck('lesson_id')
-                ->toArray();
+        $allCourseLessonIds = $course->modules->flatMap->lessons->pluck('id')->toArray();
+        $completedIds = $user->completedLessons()
+            ->whereIn('lesson_id', $allCourseLessonIds)
+            ->pluck('lesson_id')
+            ->toArray();
 
-            $totalLessons = count($allCourseLessonIds);
-            $completedCount = count($completedIds);
+        $totalLessons = count($allCourseLessonIds);
+        $completedCount = count($completedIds);
 
-            $allLessonsDone = ($totalLessons > 0 && $completedCount === $totalLessons);
-            
-            $canGenerate = $allLessonsDone; 
+        $allLessonsDone = ($totalLessons > 0 && $completedCount === $totalLessons);
+        
+        $quizPassed = false;
+        if ($course->quiz) {
+            $quizPassed = QuizResult::where('user_id', $user->id)
+                ->where('quiz_id', $course->quiz->id)
+                ->where('passed', true)
+                ->exists();
         }
 
-        $attemptsCount = 0;
-        if ($user) {
-            $quizId = $course->quiz?->id;
-            if ($quizId) {
-                $attemptsCount = QuizResult::where('user_id', $user->id)
-                    ->where('quiz_id', $quizId)
-                    ->count();
-            }
+        $canGenerate = $allLessonsDone && (!$course->quiz || $quizPassed);
+    }
+
+        $quizPassed = false;
+        $noAttemptsLeft = false;
+
+        if ($user && $course->quiz) {
+            $quizPassed = QuizResult::where('user_id', $user->id)->where('quiz_id', $course->quiz->id)->where('passed', true)->exists();
+
+            $attempts = QuizResult::where('user_id', $user->id)->where('quiz_id', $course->quiz->id)->count();
+            
+            $noAttemptsLeft = $attempts >= ($course->quiz->max_attempts ?? 3);
         }
 
         return response()->json([
             'course' => $course,
             'completed_lessons' => $completedIds,
             'can_generate_certificate' => $canGenerate,
-            'quiz_attempts' => $attemptsCount
+            'quiz_passed' => $quizPassed,
+            'no_attempts_left' => $noAttemptsLeft
         ]);
     }
 
@@ -113,7 +123,7 @@ class CourseController extends Controller
 
         $completedLessonIds = $user->completedLessons()->pluck('lesson_id')->toArray();
 
-        $courses = Course::with(['modules.lessons', 'instructor', 'certificates' => function($q) use ($user) {
+        $courses = Course::with(['modules.lessons', 'instructor', 'quiz', 'certificates' => function($q) use ($user) {
                 $q->where('user_id', $user->id);
             }])
             ->where('is_published', true)
@@ -133,24 +143,28 @@ class CourseController extends Controller
                 if ($progress > 0) {
                     $course->progress_percentage = $progress;
                     
-                    $hasQuiz = $course->quiz()->exists();
+                    $hasQuiz = $course->quiz !== null;
                     $passedQuiz = false;
 
                     if ($hasQuiz) {
-                        $passedQuiz = \App\Models\QuizResult::where('user_id', $user->id)
+                        $passedQuiz = QuizResult::where('user_id', $user->id)
                             ->where('quiz_id', $course->quiz->id)
                             ->where('passed', true)
                             ->exists();
                     }
 
-                    $course->certificate_hash = $course->certificates->first()?->hash;
+                    $isFullyFinished = ($progress === 100 && (!$hasQuiz || $passedQuiz));
+
+                    if ($isFullyFinished) {
+                        $certificate = $course->certificates->where('user_id', $user->id)->first();
+                        $course->certificate_hash = $certificate ? $certificate->hash : null;
+                        $stats['completed']++;
+                    } else {
+                        $course->certificate_hash = null;
+                    }
                     
                     $enrolledCourses[] = $course;
                     $stats['started']++;
-
-                    if ($progress === 100 && (!$hasQuiz || $passedQuiz)) {
-                        $stats['completed']++;
-                    }
                 }
             }
         }
@@ -168,8 +182,8 @@ class CourseController extends Controller
 
     public function instructorCourses(Request $request)
     {
-        $courses = Course::withCount(['modules', 'certificates'])->orderBy('title', 'asc')->get();
-
+        $courses = Course::withCount(['modules', 'certificates as students_count'])->orderBy('title', 'asc')->get();
+        
         return response()->json($courses);
     }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Certificate;
+use App\Models\QuizResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,16 @@ class CertificateController extends Controller
         try {
             $course = Course::where('slug', $slug)->firstOrFail();
             $user = $request->user();
+            
+            if ($course->quiz) {
+                $passed = QuizResult::where('user_id', $user->id)
+                    ->where('quiz_id', $course->quiz->id)
+                    ->where('passed', true)
+                    ->exists();
+                if (!$passed) {
+                    return response()->json(['message' => 'Você precisa ser aprovado na avaliação primeiro.'], 403);
+                }
+            }
 
             $cert = Certificate::firstOrCreate(
                 ['user_id' => $user->id, 'course_id' => $course->id],

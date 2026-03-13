@@ -9,7 +9,7 @@ interface InstructorCourse {
     slug: string;
     is_published: boolean;
     modules_count: number;
-    certificates_count: number;
+    students_count: number;
 }
 
 const InstructorDashboard = () => {
@@ -112,7 +112,7 @@ const InstructorDashboard = () => {
                                         </span>
                                     </td>
                                     <td className="px-8 py-6 text-sm text-gray-500 text-center">{course.modules_count} Módulos</td>
-                                    <td className="px-8 py-6 text-sm font-bold text-blue-600 text-center">{course.certificates_count}</td>
+                                    <td className="px-8 py-6 text-sm font-bold text-blue-600 text-center">{course.students_count}</td>
                                     <td className="px-8 py-6">
                                         <div className="flex justify-center items-center gap-2">
                                             <Link 

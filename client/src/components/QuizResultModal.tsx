@@ -46,18 +46,26 @@ const QuizResultModal = ({ isOpen, passed, score, minScore, attemptsLeft, onClos
                             Gerar Meu Certificado
                         </button>
                     ) : (
-                        attemptsLeft > 0 && (
-                            <button 
-                                onClick={onRetry}
-                                className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-purple-600 transition-all"
-                            >
-                                Tentar Novamente
-                            </button>
-                        )
+                        <>
+                            {attemptsLeft > 0 ? (
+                                <button 
+                                    onClick={onRetry}
+                                    className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-purple-600 transition-all"
+                                >
+                                    Tentar Novamente
+                                </button>
+                            ) : (
+                                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-[10px] font-black uppercase tracking-widest leading-relaxed">
+                                    🚫 Limite de tentativas esgotado!<br/> 
+                                    Aguarde as orientações do instrutor.
+                                </div>
+                            )}
+                        </>
                     )}
+
                     <button 
                         onClick={onClose}
-                        className="w-full bg-gray-100 text-gray-500 py-4 rounded-2xl font-black uppercase text-xs tracking-widest"
+                        className="w-full bg-gray-100 text-gray-500 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-gray-200 transition-all"
                     >
                         Voltar ao Curso
                     </button>

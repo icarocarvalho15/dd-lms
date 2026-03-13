@@ -41,6 +41,7 @@ const CourseDetails = () => {
     const [canGenerate, setCanGenerate] = useState(false);
     const [isQuizActive, setIsQuizActive] = useState(false);
     const [quizPassed, setQuizPassed] = useState(false);
+    const [noAttemptsLeft, setNoAttemptsLeft] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -56,6 +57,8 @@ const CourseDetails = () => {
                     setCourse(courseData);
                     setCompletedLessons(res.data.completed_lessons || []);
                     setCanGenerate(res.data.can_generate_certificate);
+                    setQuizPassed(res.data.quiz_passed);
+                    setNoAttemptsLeft(res.data.no_attempts_left);
                     if (res.data.quiz_passed) {
                         setQuizPassed(true);
                         setIsQuizActive(false);
@@ -206,12 +209,23 @@ const CourseDetails = () => {
                                 quiz={course.quiz} 
                                 courseId={course.id} 
                                 handleDownloadCertificate={handleDownloadCertificate} 
+                                setIsQuizActive={setIsQuizActive}
                                 onComplete={(score) => {
-                                    if (score >= course.quiz!.min_score) {
-                                        setCanGenerate(true);
-                                        setQuizPassed(true);
+                                    if (score === -1) {
                                         setIsQuizActive(false);
-                                        if (course.modules[0].lessons[0]) setCurrentLesson(course.modules[0].lessons[0]);
+                                        if (course.modules?.[0]?.lessons?.[0]) {
+                                            setCurrentLesson(course.modules[0].lessons[0]);
+                                        }
+                                        return;
+                                    }
+                                    if (score >= (course.quiz?.min_score || 70)) {
+                                        setQuizPassed(true);
+                                        setCanGenerate(true);
+                                        setIsQuizActive(false);
+                                        setNoAttemptsLeft(false);
+                                        if (course.modules?.[0]?.lessons?.[0]) {
+                                            setCurrentLesson(course.modules[0].lessons[0]);
+                                        }
                                     }
                                 }}
                             />
@@ -233,10 +247,13 @@ const CourseDetails = () => {
                                                         <div className="text-6xl mb-4 animate-bounce">🎉</div>
                                                         <h2 className="text-3xl font-bold mb-4 uppercase">Aula Concluída!</h2>
                                                         <button 
-                                                            onClick={() => setShowFinishedOverlay(false)}
+                                                            onClick={() => {
+                                                                setShowFinishedOverlay(false);
+                                                                handleNextLesson();
+                                                            }}
                                                             className="bg-white text-blue-900 px-8 py-3 rounded-full font-bold text-xs uppercase"
                                                         >
-                                                            Continuar Assistindo
+                                                            Próxima Aula
                                                         </button>
                                                     </div>
                                                 )}
@@ -264,38 +281,29 @@ const CourseDetails = () => {
                                                 />
                                             </div>
                                             <div className="mt-12 pt-8 border-t flex justify-end items-center">
-                                                {canGenerate && (!course.quiz || quizPassed) ? (
-                                                    (!course.quiz || isQuizActive || progressPercentage < 100) ? (
-                                                        <button onClick={handleDownloadCertificate} className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-xl">
-                                                            🎓 Gerar Certificado
-                                                        </button>
-                                                    ) : (
-                                                        <button 
-                                                            onClick={() => setIsQuizActive(true)}
-                                                            className="bg-purple-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-xl"
-                                                        >
-                                                            📝 Realizar Avaliação Final
-                                                        </button>
-                                                    )
+                                                {canGenerate ? (
+                                                    <button onClick={handleDownloadCertificate} className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-xl"
+                                                    >
+                                                        🎓 Gerar Certificado
+                                                    </button>
                                                 ) : (
-                                                    completedLessons.includes(currentLesson?.id || 0) && (
-                                                        <button 
-                                                            onClick={() => {
-                                                                const allLessons = course.modules.flatMap(m => m.lessons);
-                                                                const isLast = allLessons[allLessons.length - 1].id === currentLesson?.id;
-                                                                if (isLast && course.quiz) {
-                                                                    setIsQuizActive(true);
-                                                                    setCurrentLesson(null);
-                                                                } else {
-                                                                    handleNextLesson();
-                                                                }
-                                                            }}
-                                                            className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest"
-                                                        >
-                                                            {course.modules.flatMap(m => m.lessons).at(-1)?.id === currentLesson?.id && course.quiz 
-                                                                ? 'Ir para Avaliação Final ➔' 
-                                                                : 'Próxima Aula ➔'}
-                                                        </button>
+                                                    progressPercentage === 100 && course.quiz ? (
+                                                        !noAttemptsLeft ? (
+                                                            <button onClick={() => setIsQuizActive(true)} className="bg-purple-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-xl"
+                                                            >
+                                                                📝 Realizar Avaliação Final
+                                                            </button>
+                                                        ) : (
+                                                            <div className="text-red-500 font-black uppercase text-[10px]">🚫 Tentativas Esgotadas</div>
+                                                        )
+                                                    ) : (
+                                                        /* PRIORIDADE 3: Botão de Próxima Aula normal */
+                                                        completedLessons.includes(currentLesson?.id) && (
+                                                            <button onClick={handleNextLesson} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest"
+                                                            >
+                                                                Próxima Aula ➔
+                                                            </button>
+                                                        )
                                                     )
                                                 )}
                                             </div>
@@ -392,7 +400,7 @@ const CourseDetails = () => {
                             {course.quiz && (
                                 <div className="mt-4 pt-4 border-t border-gray-100 px-4 pb-4">
                                     <button
-                                        disabled={progressPercentage < 100}
+                                        disabled={progressPercentage < 100 || quizPassed || noAttemptsLeft}
                                         onClick={() => {
                                             setIsQuizActive(true);
                                             setCurrentLesson(null);
@@ -400,15 +408,21 @@ const CourseDetails = () => {
                                         className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all border-2 ${
                                             isQuizActive 
                                                 ? 'bg-purple-600 border-purple-600 text-white shadow-lg' 
-                                                : progressPercentage < 100
+                                                : (progressPercentage < 100 || quizPassed || noAttemptsLeft)
                                                     ? 'opacity-40 cursor-not-allowed bg-gray-50 border-transparent'
                                                     : 'bg-white border-dashed border-purple-200 text-purple-700 hover:bg-purple-50'
                                         }`}
                                     >
-                                        <span className="text-lg">{progressPercentage < 100 ? '🔒' : '🎓'}</span>
+                                        <span className="text-lg">
+                                            {quizPassed ? '✅' : noAttemptsLeft ? '🚫' : progressPercentage < 100 ? '🔒' : '🎓'}
+                                        </span>
                                         <div className="text-left flex-1">
-                                            <span className="block text-[9px] font-black uppercase tracking-widest opacity-60">Conclusão do Curso</span>
-                                            <span className="font-bold text-sm">Avaliação de Certificação</span>
+                                            <span className="block text-[9px] font-black uppercase tracking-widest opacity-60">
+                                                {quizPassed ? 'Aprovado' : noAttemptsLeft ? 'Bloqueado' : 'Conclusão'}
+                                            </span>
+                                            <span className="font-bold text-sm">
+                                                {quizPassed ? 'Avaliação Concluída' : noAttemptsLeft ? 'Tentativas Esgotadas' : 'Avaliação Final'}
+                                            </span>
                                         </div>
                                     </button>
                                 </div>
