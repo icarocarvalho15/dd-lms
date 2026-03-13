@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('course_id')->constrained()->onDelete('cascade');
             $table->integer('min_score')->default(70);
+            $table->integer('max_attempts')->default(3);
             $table->timestamps();
         });
 

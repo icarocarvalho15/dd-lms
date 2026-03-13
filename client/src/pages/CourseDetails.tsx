@@ -56,6 +56,10 @@ const CourseDetails = () => {
                     setCourse(courseData);
                     setCompletedLessons(res.data.completed_lessons || []);
                     setCanGenerate(res.data.can_generate_certificate);
+                    if (res.data.quiz_passed) {
+                        setQuizPassed(true);
+                        setIsQuizActive(false);
+                    }
                     if (courseData.modules?.[0]?.lessons?.[0]) {
                         setCurrentLesson(courseData.modules[0].lessons[0]);
                     }
@@ -201,17 +205,13 @@ const CourseDetails = () => {
                             <QuizPlayer 
                                 quiz={course.quiz} 
                                 courseId={course.id} 
+                                handleDownloadCertificate={handleDownloadCertificate} 
                                 onComplete={(score) => {
                                     if (score >= course.quiz!.min_score) {
-                                        setIsQuizActive(false);
                                         setCanGenerate(true);
                                         setQuizPassed(true);
                                         setIsQuizActive(false);
                                         if (course.modules[0].lessons[0]) setCurrentLesson(course.modules[0].lessons[0]);
-                                        confetti({ /* ... */ });
-                                        alert(`Parabéns! Você foi aprovado com ${score}%`);
-                                    } else {
-                                        alert(`Sua nota foi ${score}%. Você precisa de ${course.quiz!.min_score}% para passar.`);
                                     }
                                 }}
                             />

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Models\Module;
 use App\Models\Lesson;
+use App\Models\QuizResult;
 
 class CourseController extends Controller
 {
@@ -75,10 +76,21 @@ class CourseController extends Controller
             $canGenerate = $allLessonsDone; 
         }
 
+        $attemptsCount = 0;
+        if ($user) {
+            $quizId = $course->quiz?->id;
+            if ($quizId) {
+                $attemptsCount = QuizResult::where('user_id', $user->id)
+                    ->where('quiz_id', $quizId)
+                    ->count();
+            }
+        }
+
         return response()->json([
             'course' => $course,
             'completed_lessons' => $completedIds,
-            'can_generate_certificate' => $canGenerate
+            'can_generate_certificate' => $canGenerate,
+            'quiz_attempts' => $attemptsCount
         ]);
     }
 
@@ -116,17 +128,29 @@ class CourseController extends Controller
 
             if ($totalLessons > 0) {
                 $completedCount = count(array_intersect($lessonIds, $completedLessonIds));
-
                 $progress = (int) round(($completedCount / $totalLessons) * 100);
 
                 if ($progress > 0) {
                     $course->progress_percentage = $progress;
+                    
+                    $hasQuiz = $course->quiz()->exists();
+                    $passedQuiz = false;
+
+                    if ($hasQuiz) {
+                        $passedQuiz = \App\Models\QuizResult::where('user_id', $user->id)
+                            ->where('quiz_id', $course->quiz->id)
+                            ->where('passed', true)
+                            ->exists();
+                    }
+
                     $course->certificate_hash = $course->certificates->first()?->hash;
                     
                     $enrolledCourses[] = $course;
-                    
                     $stats['started']++;
-                    if ($progress === 100) $stats['completed']++;
+
+                    if ($progress === 100 && (!$hasQuiz || $passedQuiz)) {
+                        $stats['completed']++;
+                    }
                 }
             }
         }
@@ -144,9 +168,6 @@ class CourseController extends Controller
 
     public function instructorCourses(Request $request)
     {
-        /** @var \App\Models\User $user */
-        $user = $request->user();
-
         $courses = Course::withCount(['modules', 'certificates'])->orderBy('title', 'asc')->get();
 
         return response()->json($courses);

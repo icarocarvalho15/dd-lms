@@ -32,6 +32,7 @@ interface QuizQuestion {
 interface QuizData {
     id: number;
     min_score: number;
+    max_attempts: number;
     questions: QuizQuestion[];
 }
 
@@ -69,6 +70,7 @@ const EditCourse = () => {
     const [hasQuiz, setHasQuiz] = useState(false);
     const [showQuizModal, setShowQuizModal] = useState(false);
     const [quizMinScore, setQuizMinScore] = useState(70);
+    const [quizMaxAttempts, setQuizMaxAttempts] = useState(3);
 
     const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([
         { question_text: '', options: [
@@ -277,6 +279,7 @@ const EditCourse = () => {
     const openQuizModal = () => {
         if (course?.quiz) {
             setQuizMinScore(course.quiz.min_score);
+            setQuizMaxAttempts(course.quiz.max_attempts || 3);
             const mappedQuestions: QuizQuestion[] = course.quiz.questions.map((q) => ({
                 question_text: q.question_text,
                 options: q.options.map((o) => ({
@@ -287,6 +290,7 @@ const EditCourse = () => {
             setQuizQuestions(mappedQuestions);
         } else {
             setQuizMinScore(70);
+            setQuizMaxAttempts(3);
             setQuizQuestions([{ 
                 question_text: '', 
                 options: [{ option_text: '', is_correct: true }, { option_text: '', is_correct: false }] 
@@ -608,10 +612,19 @@ const EditCourse = () => {
                                 Configurar <span className="text-purple-600">Avaliação Final</span>
                             </h2>
                             <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-2xl">
+                                <span className="text-[10px] font-black uppercase text-gray-400">Tentativas</span>
+                                <input 
+                                    type="number" 
+                                    className="w-12 bg-transparent font-bold text-purple-600 outline-none"
+                                    value={quizMaxAttempts}
+                                    onChange={(e) => setQuizMaxAttempts(parseInt(e.target.value))}
+                                />
+                            </div>
+                            <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-2xl">
                                 <span className="text-[10px] font-black uppercase text-gray-400">Nota Mínima (%)</span>
                                 <input 
                                     type="number" 
-                                    className="w-16 bg-transparent font-bold text-purple-600 outline-none"
+                                    className="w-12 bg-transparent font-bold text-purple-600 outline-none"
                                     value={quizMinScore}
                                     onChange={(e) => setQuizMinScore(parseInt(e.target.value))}
                                 />
@@ -695,6 +708,7 @@ const EditCourse = () => {
                                     try {
                                         await api.post(`/courses/${course?.id}/quiz`, {
                                             min_score: quizMinScore,
+                                            max_attempts: quizMaxAttempts,
                                             questions: quizQuestions
                                         });
                                         setShowQuizModal(false);

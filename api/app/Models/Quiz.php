@@ -8,7 +8,8 @@ class Quiz extends Model
 {
     protected $fillable = [
         'course_id',
-        'min_score'
+        'min_score',
+        'max_attempts'
     ];
 
     public function course() {
