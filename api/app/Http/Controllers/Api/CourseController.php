@@ -11,6 +11,7 @@ use App\Models\Course;
 use App\Models\Module;
 use App\Models\Lesson;
 use App\Models\QuizResult;
+use App\Models\Certificate;
 
 class CourseController extends Controller
 {
@@ -154,10 +155,13 @@ class CourseController extends Controller
                     }
 
                     $isFullyFinished = ($progress === 100 && (!$hasQuiz || $passedQuiz));
-
+                    
                     if ($isFullyFinished) {
-                        $certificate = $course->certificates->where('user_id', $user->id)->first();
-                        $course->certificate_hash = $certificate ? $certificate->hash : null;
+                        $certificate = Certificate::firstOrCreate(
+                            ['user_id' => $user->id, 'course_id' => $course->id],
+                            ['hash' => bin2hex(random_bytes(32))]
+                        );
+                        $course->certificate_hash = $certificate->hash;
                         $stats['completed']++;
                     } else {
                         $course->certificate_hash = null;

@@ -248,12 +248,16 @@ const CourseDetails = () => {
                                                         <h2 className="text-3xl font-bold mb-4 uppercase">Aula Concluída!</h2>
                                                         <button 
                                                             onClick={() => {
+                                                                const videoElement = document.querySelector('video');
+                                                                if (videoElement) {
+                                                                    videoElement.currentTime = 0;
+                                                                    videoElement.play();
+                                                                }
                                                                 setShowFinishedOverlay(false);
-                                                                handleNextLesson();
                                                             }}
                                                             className="bg-white text-blue-900 px-8 py-3 rounded-full font-bold text-xs uppercase"
                                                         >
-                                                            Próxima Aula
+                                                            Assistir novamente
                                                         </button>
                                                     </div>
                                                 )}
@@ -297,7 +301,6 @@ const CourseDetails = () => {
                                                             <div className="text-red-500 font-black uppercase text-[10px]">🚫 Tentativas Esgotadas</div>
                                                         )
                                                     ) : (
-                                                        /* PRIORIDADE 3: Botão de Próxima Aula normal */
                                                         completedLessons.includes(currentLesson?.id) && (
                                                             <button onClick={handleNextLesson} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest"
                                                             >
@@ -325,108 +328,112 @@ const CourseDetails = () => {
                             </>
                         )}
                     </div>
-                    <div className="w-full lg:w-96 bg-white rounded-2xl shadow-sm border border-gray-200 h-fit overflow-hidden">
-                        <div className="p-6 border-b border-gray-100">
-                            <h3 className="font-bold text-lg uppercase  tracking-tighter">Conteúdo do Treinamento</h3>
-                        </div>
-                        <div className="p-6 bg-gray-50/50">
-                            <div className="flex justify-between items-center mb-3">
-                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Progresso Geral</span>
-                                <span className="text-sm font-bold text-blue-600">{progressPercentage}%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-1.5 shadow-inner">
-                                <div 
-                                    className="bg-blue-600 h-1.5 rounded-full transition-all duration-700 ease-out" 
-                                    style={{ width: `${progressPercentage}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                        <div className="max-h-[500px] overflow-y-auto">
-                            {course.modules.map((module) => (
-                                <div key={module.id}>
-                                    <div className="p-4 bg-gray-50/80 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-y border-gray-100">
-                                        {module.title}
+                    <div className="w-full lg:w-96">
+                        <div className="sticky top-24 space-y-4">
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                                <div className="p-6 border-b border-gray-100">
+                                    <h3 className="font-bold text-lg uppercase  tracking-tighter">Conteúdo do Treinamento</h3>
+                                </div>
+                                <div className="p-6 bg-gray-50/50">
+                                    <div className="flex justify-between items-center mb-3">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Progresso Geral</span>
+                                        <span className="text-sm font-bold text-blue-600">{progressPercentage}%</span>
                                     </div>
-                                    {module.lessons.map((lesson) => {
-                                        const allLessons = course.modules.flatMap(m => m.lessons);
-                                        const lessonIndex = allLessons.findIndex(l => l.id === lesson.id);
-                                        const isCompleted = completedLessons.includes(lesson.id);
-                                        const previousCompleted = lessonIndex > 0 && completedLessons.includes(allLessons[lessonIndex - 1].id);
-                                        const isLocked = !canGenerate && lessonIndex > 0 && !previousCompleted && !isCompleted;
-                                        return (
-                                            <div 
-                                                key={lesson.id} 
-                                                className={`flex items-center justify-between p-4 transition-all border-l-4 ${
-                                                    currentLesson?.id === lesson.id 
-                                                    ? 'bg-blue-50/50 border-blue-600' 
-                                                    : isLocked ? 'opacity-40 cursor-not-allowed' : 'border-transparent hover:bg-gray-50'
+                                    <div className="w-full bg-gray-200 rounded-full h-1.5 shadow-inner">
+                                        <div 
+                                            className="bg-blue-600 h-1.5 rounded-full transition-all duration-700 ease-out" 
+                                            style={{ width: `${progressPercentage}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                                <div className="max-h-[calc(100vh-350px)] overflow-y-auto">
+                                    {course.modules.map((module) => (
+                                        <div key={module.id}>
+                                            <div className="p-4 bg-gray-50/80 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-y border-gray-100">
+                                                {module.title}
+                                            </div>
+                                            {module.lessons.map((lesson) => {
+                                                const allLessons = course.modules.flatMap(m => m.lessons);
+                                                const lessonIndex = allLessons.findIndex(l => l.id === lesson.id);
+                                                const isCompleted = completedLessons.includes(lesson.id);
+                                                const previousCompleted = lessonIndex > 0 && completedLessons.includes(allLessons[lessonIndex - 1].id);
+                                                const isLocked = !canGenerate && lessonIndex > 0 && !previousCompleted && !isCompleted;
+                                                return (
+                                                    <div 
+                                                        key={lesson.id} 
+                                                        className={`flex items-center justify-between p-4 transition-all border-l-4 ${
+                                                            currentLesson?.id === lesson.id 
+                                                            ? 'bg-blue-50/50 border-blue-600' 
+                                                            : isLocked ? 'opacity-40 cursor-not-allowed' : 'border-transparent hover:bg-gray-50'
+                                                        }`}
+                                                    >
+                                                        <button 
+                                                            disabled={isLocked}
+                                                            onClick={() => {
+                                                                if (!isLocked) {
+                                                                    setCurrentLesson(lesson);
+                                                                    setSecondsRead(0);
+                                                                    setShowFinishedOverlay(false);
+                                                                }
+                                                            }} 
+                                                            className="flex items-center gap-4 text-left flex-1"
+                                                        >
+                                                            <span className="opacity-50 text-xs">
+                                                                {isLocked ? '🔒' : (lesson.video_url ? '🎥' : '📄')}
+                                                            </span>
+                                                            <span className={`text-sm ${currentLesson?.id === lesson.id ? 'text-blue-700 font-bold' : 'text-gray-600'}`}>
+                                                                {lesson.title}
+                                                            </span>
+                                                        </button>
+                                                        {isLocked ? (
+                                                            <div className="h-4 w-4 flex items-center justify-center">
+                                                                <span className="text-[10px]">🚫</span>
+                                                            </div>
+                                                        ) : (
+                                                            <input 
+                                                                type="checkbox" 
+                                                                checked={completedLessons.includes(lesson.id)} 
+                                                                readOnly
+                                                                className="h-4 w-4 rounded border-gray-300 text-blue-600 cursor-not-allowed transition-all"
+                                                            />
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ))}
+                                    {course.quiz && (
+                                        <div className="mt-4 pt-4 border-t border-gray-100 px-4 pb-4">
+                                            <button
+                                                disabled={progressPercentage < 100 || quizPassed || noAttemptsLeft}
+                                                onClick={() => {
+                                                    setIsQuizActive(true);
+                                                    setCurrentLesson(null);
+                                                }}
+                                                className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all border-2 ${
+                                                    isQuizActive 
+                                                        ? 'bg-purple-600 border-purple-600 text-white shadow-lg' 
+                                                        : (progressPercentage < 100 || quizPassed || noAttemptsLeft)
+                                                            ? 'opacity-40 cursor-not-allowed bg-gray-50 border-transparent'
+                                                            : 'bg-white border-dashed border-purple-200 text-purple-700 hover:bg-purple-50'
                                                 }`}
                                             >
-                                                <button 
-                                                    disabled={isLocked}
-                                                    onClick={() => {
-                                                        if (!isLocked) {
-                                                            setCurrentLesson(lesson);
-                                                            setSecondsRead(0);
-                                                            setShowFinishedOverlay(false);
-                                                        }
-                                                    }} 
-                                                    className="flex items-center gap-4 text-left flex-1"
-                                                >
-                                                    <span className="opacity-50 text-xs">
-                                                        {isLocked ? '🔒' : (lesson.video_url ? '🎥' : '📄')}
+                                                <span className="text-lg">
+                                                    {quizPassed ? '✅' : noAttemptsLeft ? '🚫' : progressPercentage < 100 ? '🔒' : '🎓'}
+                                                </span>
+                                                <div className="text-left flex-1">
+                                                    <span className="block text-[9px] font-black uppercase tracking-widest opacity-60">
+                                                        {quizPassed ? 'Aprovado' : noAttemptsLeft ? 'Bloqueado' : 'Conclusão'}
                                                     </span>
-                                                    <span className={`text-sm ${currentLesson?.id === lesson.id ? 'text-blue-700 font-bold' : 'text-gray-600'}`}>
-                                                        {lesson.title}
+                                                    <span className="font-bold text-sm">
+                                                        {quizPassed ? 'Avaliação Concluída' : noAttemptsLeft ? 'Tentativas Esgotadas' : 'Avaliação Final'}
                                                     </span>
-                                                </button>
-                                                {isLocked ? (
-                                                    <div className="h-4 w-4 flex items-center justify-center">
-                                                        <span className="text-[10px]">🚫</span>
-                                                    </div>
-                                                ) : (
-                                                    <input 
-                                                        type="checkbox" 
-                                                        checked={completedLessons.includes(lesson.id)} 
-                                                        readOnly
-                                                        className="h-4 w-4 rounded border-gray-300 text-blue-600 cursor-not-allowed transition-all"
-                                                    />
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ))}
-                            {course.quiz && (
-                                <div className="mt-4 pt-4 border-t border-gray-100 px-4 pb-4">
-                                    <button
-                                        disabled={progressPercentage < 100 || quizPassed || noAttemptsLeft}
-                                        onClick={() => {
-                                            setIsQuizActive(true);
-                                            setCurrentLesson(null);
-                                        }}
-                                        className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all border-2 ${
-                                            isQuizActive 
-                                                ? 'bg-purple-600 border-purple-600 text-white shadow-lg' 
-                                                : (progressPercentage < 100 || quizPassed || noAttemptsLeft)
-                                                    ? 'opacity-40 cursor-not-allowed bg-gray-50 border-transparent'
-                                                    : 'bg-white border-dashed border-purple-200 text-purple-700 hover:bg-purple-50'
-                                        }`}
-                                    >
-                                        <span className="text-lg">
-                                            {quizPassed ? '✅' : noAttemptsLeft ? '🚫' : progressPercentage < 100 ? '🔒' : '🎓'}
-                                        </span>
-                                        <div className="text-left flex-1">
-                                            <span className="block text-[9px] font-black uppercase tracking-widest opacity-60">
-                                                {quizPassed ? 'Aprovado' : noAttemptsLeft ? 'Bloqueado' : 'Conclusão'}
-                                            </span>
-                                            <span className="font-bold text-sm">
-                                                {quizPassed ? 'Avaliação Concluída' : noAttemptsLeft ? 'Tentativas Esgotadas' : 'Avaliação Final'}
-                                            </span>
+                                                </div>
+                                            </button>
                                         </div>
-                                    </button>
+                                    )}
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </div>
                 </div>

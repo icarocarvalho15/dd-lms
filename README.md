@@ -69,6 +69,10 @@ Nesta etapa, transformamos a plataforma em uma escola real, com validação de a
 - **Gestão de Mídia Otimizada**: Implementada a exclusão física de arquivos de imagem no servidor ao atualizar ou deletar cursos (evitando arquivos órfãos).
 - **Trilha de Aprendizado Blindada**: O certificado agora possui lógica de precedência: 100% das aulas concluídas + Aprovação na Avaliação Final.
 - **QuizPlayer Component**: Interface interativa para o aluno realizar a prova no lugar do conteúdo da aula.
+- **[x] Controle de Tentativas**: Limite configurável de tentativas por avaliação para evitar "chutes" excessivos.
+- **[x] Sidebar Sticky**: Interface de player otimizada com menu lateral fixo para melhor navegação em aulas longas.
+- **[x] Persistência de Aprovação**: Sincronização em tempo real entre o resultado do Quiz e a liberação imediata do certificado sem necessidade de refresh.
+- **[x] Segurança de Endpoint**: Bloqueio de submissão de avaliações via API (Status 403) caso o aluno já tenha sido aprovado ou esgotado as tentativas.
 
 ### 🛠️ Tecnologias/Padrões Implementados
 - **Eager Loading**: Otimização de queries N+1 para carregar cursos e progresso no Dashboard.
