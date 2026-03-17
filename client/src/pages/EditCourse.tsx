@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import { CheckCircle, EyeOff, GripVertical, Pencil, PlayCircle, Plus, RefreshCw, Rocket, Save, Settings, Target, Trash2, XCircle } from 'lucide-react';
 import api from '../api/axios';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
@@ -371,21 +372,21 @@ const EditCourse = () => {
                     <div className="flex gap-3">
                         <button 
                             onClick={openCourseEdit}
-                            className="bg-gray-100 text-gray-600 px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all"
+                            className="flex items-center gap-2 bg-gray-100 text-gray-600 px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all"
                         >
-                            ✏️ Editar Dados do Curso
+                            <Pencil size={14} /> Editar Dados
                         </button>
                         <button 
                             onClick={handleTogglePublish}
                             className={`px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center gap-2
-                            ${course.is_published 
+                            ${course?.is_published 
                                 ? 'bg-red-50 text-red-500 border border-red-100 hover:bg-red-100' 
                                 : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:scale-105 shadow-purple-500/20'}`}
                         >
-                            {course.is_published ? (
-                                <><span>⛔</span> Retirar Curso do Ar</>
+                            {course?.is_published ? (
+                                <><EyeOff size={14} /> Desativar</>
                             ) : (
-                                <><span>🚀</span> Publicar</>
+                                <><Rocket size={14} /> Publicar</>
                             )}
                         </button>
                     </div>
@@ -409,82 +410,83 @@ const EditCourse = () => {
                     />
                     <button 
                         onClick={handleAddModule}
-                        className="bg-purple-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
+                        className="flex items-center gap-2 bg-purple-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
                     >
-                        + Módulo
+                        <Plus size={16} /> Módulo
                     </button>
                 </div>
                 <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 mb-8 flex items-center justify-between">
-                    <div>
-                        <h4 className="font-black uppercase text-xs tracking-widest text-gray-700">Avaliação de Certificação</h4>
-                        <p className="pt-2 text-sm text-gray-600">
-                            {hasQuiz ? "✅ Este curso possui avaliação para certificação." : "❌ Sem avaliação configurada."}
-                        </p>
+                    <div className="flex items-center gap-4">
+                        <div className={`p-3 rounded-2xl ${hasQuiz ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400'}`}>
+                            {hasQuiz ? <CheckCircle size={24} /> : <XCircle size={24} />}
+                        </div>
+                        <div>
+                            <h4 className="font-black uppercase text-xs tracking-widest text-gray-700">Avaliação de Certificação</h4>
+                            <p className="text-sm text-gray-500">
+                                {hasQuiz ? "Configurada e ativa" : "Nenhuma prova criada"}
+                            </p>
+                        </div>
                     </div>
                     <button 
                         onClick={openQuizModal}
-                        className="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
+                        className="flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-purple-600 transition-all"
                     >
-                        {hasQuiz ? "Editar Avaliação" : "+ Criar Avaliação"}
+                        <Settings size={14} /> {hasQuiz ? "Editar Avaliação" : "Configurar Avaliação"}
                     </button>
                 </div>
                 <DragDropContext onDragEnd={onDragEnd}>
                     <div className="space-y-6">
-                        {course.modules.map((module) => (
+                        {course?.modules.map((module) => (
                             <div key={module.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm">
                                 <div className="bg-gray-50 p-6 border-b border-gray-100 flex justify-between items-center">
-                                    <h3 className="font-black uppercase text-gray-700 flex items-center gap-2">📦 {module.title}
-                                        <button onClick={() => handleRenameModule(module.id, module.title)} className="text-xs opacity-50 hover:opacity-100">✏️</button>
+                                    <h3 className="font-black uppercase text-gray-700 flex items-center gap-3">
+                                        <div className="bg-purple-100 p-2 rounded-lg"><Plus size={14} className="text-purple-600" /></div>
+                                        {module.title}
+                                        <button onClick={() => handleRenameModule(module.id, module.title)} className="text-gray-400 hover:text-purple-600 transition-colors">
+                                            <Pencil size={12} />
+                                        </button>
                                     </h3>
                                     <div className="flex gap-3">
-                                        <button 
-                                            onClick={() => handleOpenModal(module.id)}
-                                            className="text-[10px] font-black uppercase text-purple-600 hover:text-white hover:bg-purple-600 border border-purple-600 px-4 py-2 rounded-xl transition-all"
-                                        >
-                                            + Nova Aula
+                                        <button onClick={() => handleOpenModal(module.id)} className="flex items-center gap-1 text-[10px] font-black uppercase text-purple-600 hover:text-white hover:bg-purple-600 border border-purple-600 px-4 py-2 rounded-xl transition-all">
+                                            <Plus size={12} /> Aula
                                         </button>
-                                        <button 
-                                            onClick={() => handleDeleteModule(module.id)}
-                                            className="text-[10px] font-black uppercase text-red-500 hover:text-white hover:bg-red-500 border border-red-200 hover:border-red-500 px-4 py-2 rounded-xl transition-all duration-200"
-                                        >
-                                            Excluir Módulo
+                                        <button onClick={() => handleDeleteModule(module.id)} className="flex items-center gap-1 text-[10px] font-black uppercase text-red-500 hover:text-white hover:bg-red-500 border border-red-200 px-4 py-2 rounded-xl transition-all">
+                                            <Trash2 size={12} /> Excluir
                                         </button>
                                     </div>
                                 </div>
                                 <Droppable droppableId={module.id.toString()}>
                                     {(provided) => (
-                                        <div 
-                                            {...provided.droppableProps}
-                                            ref={provided.innerRef}
-                                            className="p-4 space-y-2"
-                                        >
+                                        <div {...provided.droppableProps} ref={provided.innerRef} className="p-4 space-y-2">
                                             {module.lessons.map((lesson, index) => (
                                                 <Draggable key={lesson.id} draggableId={lesson.id.toString()} index={index}>
                                                     {(provided, snapshot) => (
                                                         <div 
-                                                            ref={provided.innerRef}
-                                                            {...provided.draggableProps}
+                                                            ref={provided.innerRef} 
+                                                            {...provided.draggableProps} 
                                                             {...provided.dragHandleProps}
                                                             className={`flex items-center justify-between p-4 bg-white rounded-xl border transition-all ${
-                                                                snapshot.isDragging ? 'shadow-2xl border-purple-400 z-50 scale-[1.02]' : 'border-gray-100 hover:border-purple-200'
+                                                                snapshot.isDragging ? 'shadow-2xl border-purple-400 z-50 scale-[1.02]' : 'border-gray-50 hover:border-purple-100'
                                                             }`}
                                                         >
                                                             <div className="flex items-center gap-3">
-                                                                <span className="text-gray-300">☰</span>
-                                                                <span className="text-sm font-bold text-gray-600">🎥 {lesson.title}</span>
+                                                                <GripVertical size={16} className="text-gray-300" />
+                                                                <PlayCircle size={16} className="text-blue-500" />
+                                                                <span className="text-sm font-bold text-gray-600">{lesson.title}</span>
                                                             </div>
-                                                            <div className="flex gap-2">
-                                                                <button onClick={() => handleOpenEditModal(module, lesson)} className="text-xs grayscale hover:grayscale-0">✏️</button>
-                                                                <button onClick={() => handleDeleteLesson(lesson.id)} className="text-xs grayscale hover:grayscale-0">🗑️</button>
+                                                            <div className="flex gap-4">
+                                                                <button onClick={() => handleOpenEditModal(module, lesson)} className="text-gray-400 hover:text-blue-600 transition-colors">
+                                                                    <Pencil size={14} />
+                                                                </button>
+                                                                <button onClick={() => handleDeleteLesson(lesson.id)} className="text-gray-400 hover:text-red-500 transition-colors">
+                                                                    <Trash2 size={14} />
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     )}
                                                 </Draggable>
                                             ))}
                                             {provided.placeholder}
-                                            {module.lessons.length === 0 && (
-                                                <p className="text-xs text-gray-400 text-center py-4">Nenhuma aula neste módulo.</p>
-                                            )}
                                         </div>
                                     )}
                                 </Droppable>
@@ -496,7 +498,9 @@ const EditCourse = () => {
             {showCourseModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
                     <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-10 shadow-2xl overflow-y-auto max-h-[90vh]">
-                        <h2 className="text-2xl font-black  uppercase mb-6">Editar <span className="text-blue-600">Curso</span></h2>
+                        <h2 className="text-2xl font-black uppercase mb-6 flex items-center gap-2">
+                            <Settings className="text-blue-600" /> Editar Curso
+                        </h2>
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-2">Título</label>
@@ -531,8 +535,8 @@ const EditCourse = () => {
                             </div>
                         </div>
                         <div className="flex gap-3 mt-10">
-                            <button onClick={handleUpdateCourse} disabled={courseUpdateLoading} className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase">
-                                {courseUpdateLoading ? 'Salvando...' : 'Atualizar Curso'}
+                            <button onClick={handleUpdateCourse} disabled={courseUpdateLoading} className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase">
+                                <Save size={16} /> {courseUpdateLoading ? 'Salvando...' : 'Atualizar Curso'}
                             </button>
                             <button onClick={() => setShowCourseModal(false)} className="px-6 bg-gray-100 text-gray-500 py-4 rounded-2xl font-black text-[10px] uppercase">Cancelar</button>
                         </div>
@@ -542,8 +546,8 @@ const EditCourse = () => {
             {showModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
                     <div className="bg-white w-full max-w-4xl rounded-[2.5rem] p-10 shadow-2xl animate-in fade-in zoom-in duration-300">
-                        <h2 className="text-2xl font-black uppercase tracking-tighter mb-6 text-gray-900">
-                            {isEditing ? 'Editar' : 'Nova'} <span className="text-purple-600">Aula</span>
+                        <h2 className="text-2xl font-black uppercase tracking-tighter mb-6 flex items-center gap-3">
+                            <PlayCircle className="text-purple-600" /> {isEditing ? 'Editar' : 'Nova'} Aula
                         </h2>
                         <div className="space-y-4">
                             <div>
@@ -584,9 +588,9 @@ const EditCourse = () => {
                             <button 
                                 onClick={handleSaveLesson}
                                 disabled={lessonLoading}
-                                className="px-6 bg-purple-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
+                                className="flex items-center gap-2 px-6 bg-purple-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
                             >
-                                {lessonLoading ? 'Salvando...' : 'Salvar Aula'}
+                                <Save size={16} /> {lessonLoading ? 'Salvando...' : 'Salvar Aula'}
                             </button>
                             <button 
                                 onClick={() => {
@@ -608,10 +612,11 @@ const EditCourse = () => {
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
                     <div className="bg-white w-full max-w-4xl rounded-[2.5rem] p-10 shadow-2xl max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-2xl font-black uppercase italic tracking-tighter">
-                                Configurar <span className="text-purple-600">Avaliação Final</span>
+                            <h2 className="text-2xl font-black uppercase italic tracking-tighter flex items-center gap-3">
+                                <Target className="text-purple-600" /> Avaliação Final
                             </h2>
                             <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-2xl">
+                                <RefreshCw size={14} className="text-gray-400" />
                                 <span className="text-[10px] font-black uppercase text-gray-400">Tentativas</span>
                                 <input 
                                     type="number" 
@@ -621,6 +626,7 @@ const EditCourse = () => {
                                 />
                             </div>
                             <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-2xl">
+                                <Target size={14} className="text-gray-400" />
                                 <span className="text-[10px] font-black uppercase text-gray-400">Nota Mínima (%)</span>
                                 <input 
                                     type="number" 
@@ -637,7 +643,7 @@ const EditCourse = () => {
                                         onClick={() => setQuizQuestions(quizQuestions.filter((_, i) => i !== qIndex))}
                                         className="absolute top-6 right-6 text-red-400 hover:text-red-600 font-bold text-xs uppercase"
                                     >
-                                        Excluir Pergunta
+                                        <Trash2 size={18} />
                                     </button>
                                     <div className="mb-4">
                                         <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">Pergunta {qIndex + 1}</label>
@@ -718,9 +724,9 @@ const EditCourse = () => {
                                         alert("Erro ao salvar quiz.");
                                     }
                                 }}
-                                className="px-6 bg-purple-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
+                                className="flex items-center gap-2 px-6 bg-purple-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
                             >
-                                Salvar Avaliação
+                                <Save size={16} /> Salvar Avaliação
                             </button>
                             <button 
                                 onClick={() => setShowQuizModal(false)}

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { PlayCircle, FileText, Lock, Ban, PartyPopper, GraduationCap, ArrowRight, Trophy, CircleCheck } from 'lucide-react';
 import { AxiosError } from 'axios';
 import 'react-quill-new/dist/quill.snow.css';
 import api from '../api/axios';
@@ -244,7 +245,7 @@ const CourseDetails = () => {
                                                 />
                                                 {showFinishedOverlay && (
                                                     <div className="absolute inset-0 bg-blue-900/90 backdrop-blur-sm flex flex-col items-center justify-center text-white z-30 text-center p-4 animate-in fade-in">
-                                                        <div className="text-6xl mb-4 animate-bounce">🎉</div>
+                                                        <div className="text-6xl mb-4 animate-bounce"><PartyPopper size={80} /></div>
                                                         <h2 className="text-3xl font-bold mb-4 uppercase">Aula Concluída!</h2>
                                                         <button 
                                                             onClick={() => {
@@ -286,25 +287,33 @@ const CourseDetails = () => {
                                             </div>
                                             <div className="mt-12 pt-8 border-t flex justify-end items-center">
                                                 {canGenerate ? (
-                                                    <button onClick={handleDownloadCertificate} className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-xl"
+                                                    <button onClick={handleDownloadCertificate}
+                                                        className="flex items-center justify-center gap-3 bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-xl"
                                                     >
-                                                        🎓 Gerar Certificado
+                                                        <GraduationCap size={20} className="mr-2" />
+                                                        <span>Gerar Certificado</span>
                                                     </button>
                                                 ) : (
                                                     progressPercentage === 100 && course.quiz ? (
                                                         !noAttemptsLeft ? (
-                                                            <button onClick={() => setIsQuizActive(true)} className="bg-purple-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-xl"
+                                                            <button onClick={() => setIsQuizActive(true)}
+                                                                className="flex items-center justify-center gap-3 bg-purple-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-xl"
                                                             >
-                                                                📝 Realizar Avaliação Final
+                                                                <FileText size={20} className="mr-2" />
+                                                                <span>Realizar Avaliação Final</span>
                                                             </button>
                                                         ) : (
-                                                            <div className="text-red-500 font-black uppercase text-[10px]">🚫 Tentativas Esgotadas</div>
+                                                            <div className="flex items-center justify-center gap-3 text-red-500 font-black uppercase text-[10px]">
+                                                                <Ban size={20} className="text-red" /><span>Tentativas Esgotadas</span>
+                                                            </div>
                                                         )
                                                     ) : (
                                                         completedLessons.includes(currentLesson?.id) && (
-                                                            <button onClick={handleNextLesson} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest"
+                                                            <button onClick={handleNextLesson}
+                                                                className="flex items-center justify-center gap-3 bg-blue-600 text-white px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest"
                                                             >
-                                                                Próxima Aula ➔
+                                                                <span>Próxima Aula</span>
+                                                                <ArrowRight size={20} className="ml-2" />
                                                             </button>
                                                         )
                                                     )
@@ -314,7 +323,7 @@ const CourseDetails = () => {
                                     </>
                                 ) : (
                                     <div className="bg-white p-20 rounded-[3rem] text-center shadow-sm border border-gray-100">
-                                        <div className="text-6xl mb-6">🏆</div>
+                                        <div className="text-6xl mb-6 flex justify-center"><Trophy size={80} className="text-yellow-500" /></div>
                                         <h2 className="text-3xl font-black uppercase tracking-tighter mb-4">Você concluiu as aulas!</h2>
                                         <p className="text-gray-500 mb-8">Agora realize a avaliação final para liberar seu certificado.</p>
                                         <button 
@@ -379,7 +388,13 @@ const CourseDetails = () => {
                                                             className="flex items-center gap-4 text-left flex-1"
                                                         >
                                                             <span className="opacity-50 text-xs">
-                                                                {isLocked ? '🔒' : (lesson.video_url ? '🎥' : '📄')}
+                                                                {isLocked ? (
+                                                                    <Lock size={16} className="text-gray-400" />
+                                                                    ) : lesson.video_url ? (
+                                                                    <PlayCircle size={16} className="text-blue-500" />
+                                                                    ) : (
+                                                                    <FileText size={16} className="text-purple-500" />
+                                                                )}
                                                             </span>
                                                             <span className={`text-sm ${currentLesson?.id === lesson.id ? 'text-blue-700 font-bold' : 'text-gray-600'}`}>
                                                                 {lesson.title}
@@ -387,7 +402,7 @@ const CourseDetails = () => {
                                                         </button>
                                                         {isLocked ? (
                                                             <div className="h-4 w-4 flex items-center justify-center">
-                                                                <span className="text-[10px]">🚫</span>
+                                                                <Ban size={16} className="text-red-600" />
                                                             </div>
                                                         ) : (
                                                             <input 
@@ -419,7 +434,15 @@ const CourseDetails = () => {
                                                 }`}
                                             >
                                                 <span className="text-lg">
-                                                    {quizPassed ? '✅' : noAttemptsLeft ? '🚫' : progressPercentage < 100 ? '🔒' : '🎓'}
+                                                    {quizPassed ? (
+                                                        <CircleCheck size={20} className="text-green-500" />
+                                                    ) : noAttemptsLeft ? (
+                                                        <Ban size={20} className="text-red-500" />
+                                                    ) : progressPercentage < 100 ? (
+                                                        <Lock size={20} className="text-gray-400" />
+                                                    ) : (
+                                                        <GraduationCap size={20} className="text-purple-600" />
+                                                    )}
                                                 </span>
                                                 <div className="text-left flex-1">
                                                     <span className="block text-[9px] font-black uppercase tracking-widest opacity-60">

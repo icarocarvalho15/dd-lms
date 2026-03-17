@@ -2,6 +2,7 @@ import { useState } from 'react';
 import api from '../api/axios';
 import QuizResultModal from '../components/QuizResultModal';
 import type { AxiosError } from 'axios';
+import { ClipboardCheck, Send, CheckCircle2, HelpCircle } from 'lucide-react';
 
 export interface Option {
     id: number;
@@ -84,37 +85,49 @@ const QuizPlayer = ({ quiz, courseId, onComplete, handleDownloadCertificate }: Q
     return (
         <div className="relative">
             <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-gray-100">
-                <div className="mb-10 text-center">
+                <div className="mb-12 text-center">
+                    <div className="inline-flex p-3 bg-purple-100 text-purple-600 rounded-2xl mb-4">
+                        <ClipboardCheck size={32} />
+                    </div>
                     <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900">
                         Avaliação <span className="text-purple-600">Final</span>
                     </h2>
-                    <p className="text-gray-500 text-sm mt-2">
-                        Você precisa de no mínimo <strong>{quiz.min_score}%</strong> para ser aprovado.
+                    <p className="text-gray-500 text-sm mt-2 flex items-center justify-center gap-2">
+                        <HelpCircle size={14} className="text-purple-400" />
+                        Você precisa de no mínimo <strong>{quiz.min_score}%</strong> de acerto para aprovação.
                     </p>
                 </div>
                 <div className="space-y-12">
                     {quiz.questions.map((q, idx) => (
                         <div key={q.id} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <h4 className="text-lg font-bold text-gray-800 mb-6 flex gap-3">
-                                <span className="bg-purple-100 text-purple-600 w-7 h-7 rounded-lg flex items-center justify-center text-xs">
-                                    {idx + 1}
+                            <div className="flex items-start gap-4 mb-6">
+                                <span className="bg-gray-900 text-white w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black shrink-0 shadow-lg shadow-gray-200">
+                                    {String(idx + 1).padStart(2, '0')}
                                 </span>
-                                {q.question_text}
-                            </h4>
+                                <h4 className="text-lg font-bold text-gray-800 leading-tight pt-1">
+                                    {q.question_text}
+                                </h4>
+                            </div>
                             <div className="grid gap-3 ml-10">
-                                {q.options.map((opt) => (
-                                    <button
-                                        key={opt.id}
-                                        onClick={() => handleSelect(q.id, opt.id)}
-                                        className={`p-4 rounded-2xl text-left text-sm font-medium transition-all border-2 ${
-                                            answers[q.id] === opt.id
-                                                ? 'border-purple-600 bg-purple-50 text-purple-700 shadow-md'
-                                                : 'border-gray-100 bg-gray-50 text-gray-600 hover:border-gray-200'
-                                        }`}
-                                    >
-                                        {opt.option_text}
-                                    </button>
-                                ))}
+                                {q.options.map((opt) => {
+                                    const isSelected = answers[q.id] === opt.id;
+                                    return (
+                                        <button
+                                            key={opt.id}
+                                            onClick={() => handleSelect(q.id, opt.id)}
+                                            className={`group relative p-5 rounded-[1.25rem] text-left text-sm font-bold transition-all border-2 flex items-center justify-between ${
+                                                isSelected
+                                                    ? 'border-purple-600 bg-purple-50 text-purple-700 shadow-md shadow-purple-500/10'
+                                                    : 'border-gray-100 bg-gray-50/50 text-gray-600 hover:border-purple-200 hover:bg-white'
+                                            }`}
+                                        >
+                                            <span>{opt.option_text}</span>
+                                            {isSelected && (
+                                                <CheckCircle2 size={18} className="text-purple-600 animate-in zoom-in duration-300" />
+                                            )}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     ))}
@@ -123,10 +136,20 @@ const QuizPlayer = ({ quiz, courseId, onComplete, handleDownloadCertificate }: Q
                     <button
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="w-full bg-gray-900 text-white py-5 rounded-3xl font-black uppercase text-xs tracking-[0.2em] hover:bg-purple-600 transition-all shadow-xl disabled:opacity-50"
+                        className="w-full flex items-center justify-center gap-3 bg-gray-900 text-white py-6 rounded-[2rem] font-black uppercase text-xs tracking-[0.2em] hover:bg-purple-600 transition-all shadow-xl active:scale-95 disabled:opacity-50"
                     >
-                        {isSubmitting ? 'Enviando...' : 'Finalizar e Ver Resultado ➔'}
+                        {isSubmitting ? (
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        ) : (
+                            <>
+                                <Send size={18} />
+                                <span>Finalizar e Ver Resultado</span>
+                            </>
+                        )}
                     </button>
+                    <p className="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest mt-6">
+                        Verifique suas respostas antes de confirmar o envio.
+                    </p>
                 </div>
             </div>
             <QuizResultModal 

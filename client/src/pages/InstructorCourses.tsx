@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Eye, Pencil, Trash2, Plus, BookOpen, Users, CheckCircle, FileEdit } from 'lucide-react';
 import api from '../api/axios';
 import Navbar from '../components/Navbar';
 
@@ -64,33 +65,22 @@ const InstructorDashboard = () => {
       </div>
     );
 
-    if (!courses) return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
-            <Navbar />
-            <div className="bg-white p-10 rounded-3xl shadow-xl max-w-md">
-                <h3 className="text-2xl font-bold mb-4">{!courses}</h3>
-                <Link to="/" className="text-blue-600 font-bold uppercase text-xs tracking-widest">Voltar ao início.</Link>
-            </div>
-        </div>
-    );
-    
     return (
         <div className="min-h-screen bg-gray-50 pt-28 px-4">
             <Navbar />
             <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-10">
                     <div>
-                        <h1 className="text-3xl font-black  uppercase tracking-tighter">Área do Instrutor</h1>
-                        <p className="text-gray-500">Gerencie seus treinamentos e acompanhe seus alunos.</p>
+                        <h1 className="text-3xl font-black uppercase tracking-tighter">Área do Instrutor</h1>
+                        <p className="text-gray-500 font-medium">Gerencie seus treinamentos e acompanhe seus alunos.</p>
                     </div>
                     <Link 
                         to="/instrutor/novo-curso"
-                        className="bg-purple-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
+                        className="flex items-center gap-2 bg-purple-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
                     >
-                        + Novo Curso
+                        <Plus size={16} /> Novo Curso
                     </Link>
                 </div>
-
                 <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 border-b border-gray-100">
@@ -104,37 +94,48 @@ const InstructorDashboard = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {courses.map(course => (
-                                <tr key={course.id} className="hover:bg-gray-50/50 transition-colors">
+                                <tr key={course.id} className="hover:bg-gray-50/50 transition-colors group">
                                     <td className="px-8 py-6 font-bold text-gray-900">{course.title}</td>
                                     <td className="px-8 py-6 text-center">
-                                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter ${course.is_published ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter ${course.is_published ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>
+                                            {course.is_published ? <CheckCircle size={10} /> : <FileEdit size={10} />}
                                             {course.is_published ? 'Publicado' : 'Rascunho'}
                                         </span>
                                     </td>
-                                    <td className="px-8 py-6 text-sm text-gray-500 text-center">{course.modules_count} Módulos</td>
-                                    <td className="px-8 py-6 text-sm font-bold text-blue-600 text-center">{course.students_count}</td>
+                                    <td className="px-8 py-6 text-sm text-gray-500 text-center">
+                                        <div className="flex items-center justify-center gap-1.5 font-medium">
+                                            <BookOpen size={14} className="text-gray-400" />
+                                            {course.modules_count} Módulos
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6 text-sm font-bold text-blue-600 text-center">
+                                        <div className="flex items-center justify-center gap-1.5">
+                                            <Users size={14} className="text-blue-400" />
+                                            {course.students_count}
+                                        </div>
+                                    </td>
                                     <td className="px-8 py-6">
                                         <div className="flex justify-center items-center gap-2">
                                             <Link 
                                                 to={`/curso/${course.slug}`} 
                                                 title="Visualizar como Aluno"
-                                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-95"
                                             >
-                                                <span className="text-lg">👁️</span>
+                                                <Eye size={18} />
                                             </Link>
                                             <Link 
                                                 to={`/instrutor/editar/${course.slug}`}
                                                 title="Editar Conteúdo"
-                                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-sm"
+                                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-sm active:scale-95"
                                             >
-                                                <span className="text-lg">✏️</span>
+                                                <Pencil size={18} />
                                             </Link>
                                             <button 
                                                 onClick={() => handleDeleteCourse(course.id)}
                                                 title="Excluir Curso"
-                                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm active:scale-95"
                                             >
-                                                <span className="text-lg">🗑️</span>
+                                                <Trash2 size={18} />
                                             </button>
                                         </div>
                                     </td>

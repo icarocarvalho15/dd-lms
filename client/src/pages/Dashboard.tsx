@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Layout, Trophy, GraduationCap, PlayCircle, CheckCircle, Clock } from 'lucide-react';
 import api from '../api/axios';
 import Navbar from '../components/Navbar';
 
@@ -65,40 +66,38 @@ const Dashboard = () => {
       </div>
     );
 
-    if (!data) return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
-            <Navbar />
-            <div className="bg-white p-10 rounded-3xl shadow-xl max-w-md">
-                <h3 className="text-2xl font-bold mb-4">{!data}</h3>
-                <Link to="/" className="text-blue-600 font-bold uppercase text-xs tracking-widest">Voltar ao início.</Link>
-            </div>
-        </div>
-    );
+    if (!data) return null;
 
     return (
         <div className="min-h-screen bg-gray-50">
             <Navbar />
             <main className="pt-28 max-w-7xl mx-auto px-4">
                 <header className="mb-10">
-                    <h1 className="text-4xl font-black  uppercase tracking-tighter text-gray-900">
-                        Olá, {data.user.name.split(' ')[0]}! 👋
+                    <h1 className="text-4xl font-black uppercase tracking-tighter text-gray-900 flex items-center gap-3">
+                        Olá, {data.user.name.split(' ')[0]}! 
                     </h1>
                     <p className="text-gray-500 font-medium">Continue de onde você parou.</p>
                 </header>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Cursos Iniciados</span>
-                        <div className="text-5xl font-black  text-blue-600">{data.stats.started}</div>
+                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
+                        <div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Cursos Iniciados</span>
+                            <div className="text-5xl font-black text-blue-600">{data.stats.started}</div>
+                        </div>
+                        <Layout size={48} className="text-blue-100" />
                     </div>
-                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Certificados Conquistados</span>
-                        <div className="text-5xl font-black  text-yellow-500">{data.stats.completed}</div>
+                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
+                        <div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Certificados Conquistados</span>
+                            <div className="text-5xl font-black text-yellow-500">{data.stats.completed}</div>
+                        </div>
+                        <Trophy size={48} className="text-yellow-100" />
                     </div>
                 </div>
-                <h2 className="text-xl font-bold uppercase  mb-6">Meus Treinamentos</h2>
+                <h2 className="text-xl font-bold uppercase mb-6">Meus Treinamentos</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-20">
                     {data.courses.map((course: DashboardCourse) => (
-                        <div key={course.id} className="bg-white rounded-[2.5rem] overflow-hidden shadow-xl border border-gray-100 flex flex-col hover:scale-[1.02] transition-transform duration-300">
+                        <div key={course.id} className="bg-white rounded-[2.5rem] overflow-hidden shadow-xl border border-gray-100 flex flex-col hover:scale-[1.02] transition-transform duration-300 group">
                             <div className="h-48 bg-gray-200 relative overflow-hidden flex items-center justify-center shadow-inner">
                                 {course.image ? (
                                     <img 
@@ -112,8 +111,18 @@ const Dashboard = () => {
                                     </div>
                                 )}
                                 <div className="absolute bottom-4 left-4 z-10">
-                                    <span className="bg-black/30 backdrop-blur-md px-3 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest">
-                                        {course.progress_percentage === 100 ? 'Concluído' : 'Em Andamento'}
+                                    <span className="bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full text-white text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
+                                        {course.progress_percentage === 100 ? (
+                                            <>
+                                                <CheckCircle size={12} className="text-green-400" />
+                                                Concluído
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Clock size={12} className="text-yellow-400" />
+                                                Em Andamento
+                                            </>
+                                        )}
                                     </span>
                                 </div>
                             </div>
@@ -124,7 +133,7 @@ const Dashboard = () => {
                                         <span className="text-gray-400">Seu Progresso</span>
                                         <span className="text-blue-600">{course.progress_percentage}%</span>
                                     </div>
-                                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden shadow-inner">
                                         <div 
                                             className="bg-blue-600 h-full transition-all duration-1000 ease-out" 
                                             style={{ width: `${course.progress_percentage}%` }}
@@ -134,8 +143,9 @@ const Dashboard = () => {
                                 <div className="mt-auto space-y-3">
                                     <Link 
                                         to={`/curso/${course.slug}`}
-                                        className="block w-full text-center bg-gray-900 text-white py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:bg-blue-600 transition-all shadow-md"
+                                        className="flex items-center justify-center gap-2 w-full bg-gray-900 text-white py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:bg-blue-600 transition-all shadow-md"
                                     >
+                                        <PlayCircle size={16} />
                                         {course.progress_percentage === 100 ? 'Rever Treinamento' : 'Continuar Estudando'}
                                     </Link>
                                     {course.progress_percentage === 100 && course.certificate_hash && (
@@ -144,9 +154,10 @@ const Dashboard = () => {
                                                 const rootURL = api.defaults.baseURL?.replace('/api', '');
                                                 window.open(`${rootURL}/certificate/${course.certificate_hash}`, '_blank');
                                             }}
-                                            className="block w-full text-center bg-gradient-to-r from-yellow-500 to-orange-600 text-white py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest shadow-lg shadow-orange-500/20 items-center justify-center gap-2"
+                                            className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-yellow-500 to-orange-600 text-white py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.02]"
                                         >
-                                            🎓 Baixar Certificado
+                                            <GraduationCap size={16} />
+                                            Baixar Certificado
                                         </button>
                                     )}
                                 </div>
