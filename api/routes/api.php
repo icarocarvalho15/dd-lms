@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\QuizController;
+use App\Http\Controllers\Api\RatingController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -17,6 +18,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/courses/{slug}', [CourseController::class, 'show']);
     Route::get('/courses/{slug}/certificate', [CertificateController::class, 'generate']);
     Route::get('/courses/{slug}/certificate-link', [CertificateController::class, 'getPermanentLink']);
+    Route::post('/courses/{id}/rate', [RatingController::class, 'store']);
     Route::post('/lessons/{id}/complete', [CourseController::class, 'toggleComplete']);
 });
 
@@ -28,6 +30,7 @@ Route::middleware(['auth:sanctum', 'role:admin,instrutor'])->group(function () {
     Route::post('/courses/{id}/quiz/submit', [QuizController::class, 'submit']);
     Route::post('/courses/{courseId}/modules', [CourseController::class, 'addModule']);
     Route::get('/instructor/courses', [CourseController::class, 'instructorCourses']);
+    Route::get('/instructor/ratings', [RatingController::class, 'index']);
     Route::delete('/modules/{id}', [CourseController::class, 'deleteModule']);
     Route::post('/modules/{moduleId}/lessons', [CourseController::class, 'addLesson']);
     Route::put('/lessons/{id}', [CourseController::class, 'updateLesson']);

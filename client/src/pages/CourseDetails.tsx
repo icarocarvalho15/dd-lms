@@ -7,6 +7,7 @@ import api from '../api/axios';
 import Navbar from '../components/Navbar';
 import confetti from 'canvas-confetti';
 import QuizPlayer, { type Quiz } from '../components/QuizPlayer';
+import CourseRatingModal from '../components/CourseRatingModal';
 
 interface Lesson {
     id: number;
@@ -43,6 +44,12 @@ const CourseDetails = () => {
     const [isQuizActive, setIsQuizActive] = useState(false);
     const [quizPassed, setQuizPassed] = useState(false);
     const [noAttemptsLeft, setNoAttemptsLeft] = useState(false);
+    const [showRatingModal, setShowRatingModal] = useState(false);
+    
+    const allCourseLessonIds = course?.modules?.flatMap(m => m.lessons.map(l => l.id)) || [];
+    const totalLessonsCount = allCourseLessonIds.length;
+    const lessonsCompletedInThisCourse = completedLessons.filter(id => allCourseLessonIds.includes(id));
+    const progressPercentage = totalLessonsCount > 0 ? Math.round((lessonsCompletedInThisCourse.length / totalLessonsCount) * 100) : 0;
 
     useEffect(() => {
         let isMounted = true;
@@ -60,10 +67,6 @@ const CourseDetails = () => {
                     setCanGenerate(res.data.can_generate_certificate);
                     setQuizPassed(res.data.quiz_passed);
                     setNoAttemptsLeft(res.data.no_attempts_left);
-                    if (res.data.quiz_passed) {
-                        setQuizPassed(true);
-                        setIsQuizActive(false);
-                    }
                     if (courseData.modules?.[0]?.lessons?.[0]) {
                         setCurrentLesson(courseData.modules[0].lessons[0]);
                     }
@@ -72,7 +75,7 @@ const CourseDetails = () => {
                 if (isMounted) {
                     const axiosError = err as AxiosError;
                     if (axiosError.response?.status !== 401) {
-                        setError("Não foi possível carregar o curso. Por favor, tente novamente mais tarde.");
+                        setError("Não foi possível carregar o curso.");
                     }
                 }
             } finally {
@@ -82,7 +85,27 @@ const CourseDetails = () => {
         fetchCourse();
         return () => { isMounted = false; };
     }, [slug]);
-    
+
+    const handleToggleComplete = useCallback(async (lessonId: number) => {
+        try {
+            await api.post(`/lessons/${lessonId}/complete`);
+            setCompletedLessons(prev => {
+                const isAlreadyCompleted = prev.includes(lessonId);
+                const newCompleted = isAlreadyCompleted ? prev : [...prev, lessonId];
+                if (!isAlreadyCompleted && newCompleted.length === allCourseLessonIds.length && allCourseLessonIds.length > 0) {
+                    setTimeout(() => setShowRatingModal(true), 1500);
+                }
+                
+                return newCompleted;
+            });
+            setShowFinishedOverlay(true);
+            const res = await api.get(`/courses/${slug}`);
+            setCanGenerate(res.data.can_generate_certificate);
+        } catch (error) {
+            console.error("Erro ao salvar progresso:", error);
+        }
+    }, [slug, allCourseLessonIds.length]);
+
     const handleNextLesson = useCallback(() => {
         if (!course || !currentLesson) return;
         const allLessons = course.modules.flatMap(m => m.lessons);
@@ -110,18 +133,6 @@ const CourseDetails = () => {
             alert("Erro ao preparar certificado.");
         }
     };
-    
-    const handleToggleComplete = useCallback(async (lessonId: number) => {
-        try {
-            await api.post(`/lessons/${lessonId}/complete`);
-            setCompletedLessons(prev => prev.includes(lessonId) ? prev : [...prev, lessonId]);
-            setShowFinishedOverlay(true);
-            const res = await api.get(`/courses/${slug}`);
-            setCanGenerate(res.data.can_generate_certificate);
-        } catch (error) {
-            console.error("Erro ao salvar progresso:", error);
-        }
-    }, [slug]);
 
     const handleVideoEnd = () => {
         if (currentLesson && !completedLessons.includes(currentLesson.id)) {
@@ -152,11 +163,6 @@ const CourseDetails = () => {
         };
     }, [currentLesson, completedLessons, handleToggleComplete]);
 
-    const allCourseLessonIds = course?.modules?.flatMap(m => m.lessons.map(l => l.id)) || [];
-    const totalLessons = allCourseLessonIds.length;
-    const lessonsCompletedInThisCourse = completedLessons.filter(id => allCourseLessonIds.includes(id));
-    const progressPercentage = totalLessons > 0 ? Math.round((lessonsCompletedInThisCourse.length / totalLessons) * 100) : 0;
-
     useEffect(() => {
         const shouldCelebrate = 
             progressPercentage === 100 && 
@@ -171,7 +177,7 @@ const CourseDetails = () => {
                 colors: ['#2563eb', '#9333ea', '#10b981']
             });
         }
-    }, [progressPercentage, loading, course, quizPassed, course?.quiz]);
+    }, [progressPercentage, loading, course, quizPassed]);
 
     if (error) return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
@@ -461,6 +467,14 @@ const CourseDetails = () => {
                     </div>
                 </div>
             </main>
+            {course && (
+                <CourseRatingModal 
+                    isOpen={showRatingModal}
+                    courseId={course.id}
+                    courseTitle={course.title}
+                    onClose={() => setShowRatingModal(false)}
+                />
+            )}
         </div>
     );
 };

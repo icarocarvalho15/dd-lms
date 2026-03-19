@@ -10,6 +10,7 @@ import InstructorCourses from './pages/InstructorCourses';
 import CreateCourse from './pages/CreateCourse';
 import EditCourse from './pages/EditCourse';
 import Profile from './pages/Profile';
+import InstructorRatings from './pages/InstructorRatings';
 
 interface UserResponse {
   id: number;
@@ -64,6 +65,7 @@ function App() {
         </Route>
         <Route element={<ProtectedRoute allowedRoles={['instrutor', 'admin']} />}>
           <Route path="/instrutor/meus-cursos" element={<InstructorCourses />} />
+          <Route path="/instrutor/avaliacoes" element={<InstructorRatings />} />
           <Route path="/instrutor/novo-curso" element={<CreateCourse />} />
           <Route path="/instrutor/editar/:slug" element={<EditCourse />} />
         </Route>

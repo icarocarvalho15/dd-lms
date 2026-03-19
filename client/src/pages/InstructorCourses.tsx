@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Pencil, Trash2, Plus, BookOpen, Users, CheckCircle, FileEdit } from 'lucide-react';
+import { Eye, Pencil, Trash2, Plus, BookOpen, Users, CheckCircle, FileEdit, MessageSquare } from 'lucide-react';
 import api from '../api/axios';
 import Navbar from '../components/Navbar';
 
@@ -74,12 +74,20 @@ const InstructorDashboard = () => {
                         <h1 className="text-3xl font-black uppercase tracking-tighter">Área do Instrutor</h1>
                         <p className="text-gray-500 font-medium">Gerencie seus treinamentos e acompanhe seus alunos.</p>
                     </div>
-                    <Link 
-                        to="/instrutor/novo-curso"
-                        className="flex items-center gap-2 bg-purple-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
-                    >
-                        <Plus size={16} /> Novo Curso
-                    </Link>
+                    <div className="flex gap-3">
+                        <Link 
+                            to="/instrutor/avaliacoes"
+                            className="flex items-center gap-2 bg-white text-gray-600 border border-gray-100 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all shadow-sm"
+                        >
+                            <MessageSquare size={16} /> Ver Feedbacks
+                        </Link>
+                        <Link 
+                            to="/instrutor/novo-curso"
+                            className="flex items-center gap-2 bg-purple-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
+                        >
+                            <Plus size={16} /> Novo Curso
+                        </Link>
+                    </div>
                 </div>
                 <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
                     <table className="w-full text-left">

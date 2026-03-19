@@ -2,8 +2,6 @@
 
 ![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white) ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white) ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white) ![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
 
-> 🚀 **DravDev Academy**: A jornada completa do conhecimento corporativo, do rascunho à certificação.
-
 Sistema de Gestão de Aprendizagem (LMS) robusto e moderno, desenvolvido para centralizar e organizar treinamentos corporativos. Uma solução Fullstack focada em performance, segurança e uma experiência de usuário (UX) de alto nível.
 
 ## 🚀 Tecnologias Utilizadas
@@ -86,6 +84,7 @@ npm run dev
 - **Player de Aula Otimizado**: Sidebar sticky e controle de progresso automático por vídeo ou tempo de leitura.
 - **Certificação Automática**: Emissão imediata de certificados ao atingir 100% de conclusão + aprovação em quiz.
 - **Perfil de Segurança**: Gestão de dados pessoais com validação de requisitos de senha.
+- **Sistema de Rating**: Avaliação de cursos (1-5 estrelas) com feedback textual opcional após a conclusão de 100% das aulas.
 
 **👨‍🏫 Gestão do Instrutor**
 - **Painel Administrativo**: Visão geral de cursos, alunos formados e status de publicação.
@@ -118,6 +117,6 @@ Este projeto foi desenvolvido com dedicação pela **Drav Dev** como parte do no
 
 Desenvolvido por Ícaro Carvalho.
 
+*v0.1.1 - Release "complete rating system with student feedback and instructor dashboard"*
 ---
 ![Versão](https://img.shields.io/badge/version-0.1.1-blue?style=flat-square) ![Status](https://img.shields.io/badge/status-active-success?style=flat-square) ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
-*v0.1.1 - Release "style: full icon standardization with Lucide and final README polish"*

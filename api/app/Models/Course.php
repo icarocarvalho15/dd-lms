@@ -42,4 +42,16 @@ class Course extends Model
     public function quiz() {
         return $this->hasOne(Quiz::class);
     }
+
+    public function ratings() {
+        return $this->hasMany(CourseRating::class);
+    }
+
+    public function getAverageRatingAttribute() {
+        return round($this->ratings()->avg('rating'), 1) ?: 0;
+    }
+
+    public function getRatingsCountAttribute() {
+        return $this->ratings()->count();
+    }
 }

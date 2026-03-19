@@ -21,6 +21,7 @@ class CourseController extends Controller
         $user = Auth::guard('sanctum')->user();
         
         $courses = Course::with(['instructor', 'modules.lessons'])
+            ->withCount('ratings')
             ->where('is_published', true)
             ->orderBy('id', 'desc')
             ->get();
@@ -42,6 +43,8 @@ class CourseController extends Controller
                 } else {
                     $course->progress_percentage = 0;
                 }
+
+                $course->append('average_rating');
             }
         }
 
@@ -127,6 +130,7 @@ class CourseController extends Controller
         $courses = Course::with(['modules.lessons', 'instructor', 'quiz', 'certificates' => function($q) use ($user) {
                 $q->where('user_id', $user->id);
             }])
+            ->withCount('ratings')
             ->where('is_published', true)
             ->get();
 
@@ -136,6 +140,8 @@ class CourseController extends Controller
         foreach ($courses as $course) {
             $lessonIds = $course->modules->flatMap->lessons->pluck('id')->toArray();
             $totalLessons = count($lessonIds);
+
+            $course->append('average_rating');
 
             if ($totalLessons > 0) {
                 $completedCount = count(array_intersect($lessonIds, $completedLessonIds));

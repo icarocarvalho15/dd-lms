@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { BookOpen, ArrowRight, Search, Trophy, Rocket, AlertCircle } from 'lucide-react';
 import api from '../api/axios';
 import Navbar from '../components/Navbar';
+import StarRating from '../components/StarRating';
 
 interface Course {
     id: number;
@@ -12,6 +13,7 @@ interface Course {
     image: string | null;
     progress_percentage: number;
     instructor?: { name: string };
+    average_rating: number;
 }
 
 const CourseList = () => {
@@ -61,7 +63,7 @@ const CourseList = () => {
             <main className="pt-28 pb-12 max-w-[1200px] mx-auto px-6">
                 <header className="mb-12">
                     <h1 className="text-4xl font-black uppercase tracking-tighter text-gray-900">
-                        Explore nossos <span className="text-blue-600">Treinamentos</span>
+                        Explore nossos <span className="text-blue-600">Cursos</span>
                     </h1>
                     <p className="text-gray-500 font-medium mt-2">Escolha uma trilha e comece a evoluir hoje mesmo.</p>
                 </header>
@@ -97,9 +99,9 @@ const CourseList = () => {
                                     <h2 className="text-xl font-black mb-3 text-gray-800 group-hover:text-blue-600 transition-colors leading-tight">
                                         {course.title}
                                     </h2>
-                                    <p className="text-gray-500 text-sm mb-6 line-clamp-2 leading-relaxed flex-1 italic">
-                                        {course.description}
-                                    </p>
+                                    <div className="mb-4">
+                                        <StarRating rating={course.average_rating || 0} size={14} />
+                                    </div>
                                     <Link 
                                         to={`/curso/${course.slug}`} 
                                         className="flex items-center justify-center gap-2 w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] hover:bg-blue-600 transition-all active:scale-95 shadow-lg shadow-gray-200"
